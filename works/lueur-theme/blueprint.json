@@ -12,7 +12,7 @@
       "step": "installTheme",
       "themeData": {
         "resource": "url",
-        "url": "https://tahara-asuka.github.io/rakulabo/works/lueur-theme/lueur.zip"
+        "url": "https://tahara-asuka.github.io/rakulabo/works/lueur-theme/lueur.zip?v=2"
       },
       "options": { "activate": true }
     },
