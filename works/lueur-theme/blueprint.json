@@ -1,0 +1,27 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Lueur — 喫茶店のためのWordPressテーマ",
+    "author": "tahara-asuka"
+  },
+  "landingPage": "/",
+  "preferredVersions": { "php": "8.2", "wp": "latest" },
+  "features": { "networking": true },
+  "steps": [
+    {
+      "step": "installTheme",
+      "themeData": {
+        "resource": "url",
+        "url": "https://tahara-asuka.github.io/rakulabo/works/lueur-theme/lueur.zip"
+      },
+      "options": { "activate": true }
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "Lueur",
+        "blogdescription": "光と影、そしてコーヒーの香る場所。"
+      }
+    }
+  ]
+}
