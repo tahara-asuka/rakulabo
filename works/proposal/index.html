@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>提案資料と図解のサンプル｜ラクラボ</title>
+<meta name="description" content="社会保険労務士事務所への提案を例に、8枚の提案資料と図解のサンプルを公開しています。実際にめくって読めます。制作：ラクラボ（田原明日翔）">
+<meta property="og:type" content="website">
+<meta property="og:title" content="提案資料と図解のサンプル｜ラクラボ">
+<meta property="og:description" content="8枚の提案資料を実際にめくって読めます。図解のサンプルと、構成の型もあわせて公開しています。">
+<meta name="theme-color" content="#F7F5F1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@500;600&display=swap">
+
+<style>
+:root{
+  --ground:#F7F5F1; --surface:#FFFFFF; --surface-alt:#EFEBE4;
+  --ink:#23302E; --ink-soft:#55625F; --muted:#8A9391;
+  --line:#E1DCD3; --line-strong:#CDC6BA;
+  --accent:#2F6F62; --accent-deep:#23574C; --accent-soft:#DCE8E4;
+  --warn:#B4703A; --warn-soft:#F6EADF;
+  --font-body:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+  --font-head:"Zen Old Mincho","Hiragino Mincho ProN",serif;
+  --radius:14px; --shadow:0 1px 2px rgba(35,48,46,.05),0 8px 28px rgba(35,48,46,.07);
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+    --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+    --line:#2A3533; --line-strong:#3A4744;
+    --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+    --warn:#D79A63; --warn-soft:#2E2620;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+  --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+  --line:#2A3533; --line-strong:#3A4744;
+  --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+  --warn:#D79A63; --warn-soft:#2E2620;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+body{ margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-body); font-size:15px; line-height:1.95; -webkit-font-smoothing:antialiased; }
+a{ color:inherit; }
+.wrap{ width:min(100% - 2.5rem, var(--wrap)); margin-inline:auto; }
+.sr{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+.site-head{ border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:saturate(1.2) blur(8px); position:sticky; top:0; z-index:20; }
+.site-head .wrap{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 0; }
+.brand{ display:flex; align-items:baseline; gap:.6rem; text-decoration:none; }
+.brand b{ font-family:var(--font-head); font-size:1.05rem; letter-spacing:.14em; font-weight:600; }
+.brand span{ font-size:.6875rem; letter-spacing:.22em; color:var(--muted); }
+.head-link{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none;
+  border-bottom:1px solid var(--line-strong); padding-bottom:2px; white-space:nowrap; }
+.head-link:hover{ color:var(--ink); border-color:var(--accent); }
+
+.hero{ padding:clamp(3rem,7vw,5rem) 0 clamp(1.5rem,3vw,2.25rem); }
+.eyebrow{ font-size:.75rem; letter-spacing:.2em; color:var(--accent); margin:0 0 1rem; font-weight:700; }
+.hero h1{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.6rem,4.2vw,2.4rem);
+  line-height:1.6; letter-spacing:.03em; margin:0 0 1.1rem; text-wrap:balance; }
+.hero p{ margin:0; max-width:36em; color:var(--ink-soft); }
+.hero .note{ margin-top:1.3rem; font-size:.8125rem; color:var(--muted);
+  border-left:2px solid var(--line-strong); padding-left:.9rem; }
+
+.sec{ padding:clamp(3rem,6vw,4.5rem) 0; border-top:1px solid var(--line); }
+.sec-head{ margin-bottom:clamp(1.5rem,3vw,2.25rem); }
+.sec-head h2{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.3rem,3vw,1.7rem);
+  letter-spacing:.04em; margin:.5rem 0 .6rem; }
+.sec-head p{ margin:0; color:var(--ink-soft); max-width:42em; }
+
+/* ---------- スライドビューア ---------- */
+.deck{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden; }
+.deck-stage{ position:relative; aspect-ratio:16/9; background:var(--surface); }
+@media (max-width:640px){ .deck-stage{ aspect-ratio:4/3; } }
+.slide{ position:absolute; inset:0; padding:clamp(1.2rem,3.4vw,2.6rem); display:none; }
+.slide[data-on="1"]{ display:flex; flex-direction:column; }
+.s-no{ position:absolute; right:clamp(1rem,2.5vw,2rem); bottom:clamp(.7rem,2vw,1.3rem);
+  font-family:var(--font-head); font-size:.75rem; color:var(--muted); letter-spacing:.1em; }
+.s-tag{ font-size:.6875rem; letter-spacing:.18em; color:var(--accent); font-weight:700; margin:0 0 .5rem; }
+.s-h{ font-family:var(--font-head); font-weight:600; letter-spacing:.03em; margin:0 0 .9rem;
+  font-size:clamp(1.05rem,2.6vw,1.6rem); line-height:1.55; }
+.s-lead{ margin:0 0 1rem; font-size:clamp(.8125rem,1.4vw,.9375rem); color:var(--ink-soft); line-height:1.95; max-width:44em; }
+.s-body{ flex:1; min-height:0; }
+.s-list{ margin:0; padding-left:1.25em; font-size:clamp(.75rem,1.35vw,.875rem); line-height:2.1; color:var(--ink-soft); }
+.s-list b{ color:var(--ink); }
+.s-cover{ justify-content:center; background:linear-gradient(150deg,var(--accent-soft),var(--surface) 70%); }
+.s-cover .s-h{ font-size:clamp(1.3rem,3.6vw,2.2rem); }
+.s-meta{ margin-top:1.4rem; font-size:.75rem; color:var(--muted); letter-spacing:.06em; line-height:2; }
+.s-svg{ width:100%; height:100%; display:block; }
+.s-grid{ display:grid; gap:.7rem; height:100%; }
+@media (min-width:560px){ .s-grid.c3{ grid-template-columns:repeat(3,1fr); } .s-grid.c2{ grid-template-columns:repeat(2,1fr); } }
+.s-card{ background:var(--surface-alt); border:1px solid var(--line); border-radius:10px;
+  padding:clamp(.6rem,1.5vw,1rem); }
+.s-card h4{ margin:0 0 .35rem; font-size:clamp(.75rem,1.4vw,.875rem); font-weight:700; letter-spacing:.02em; }
+.s-card p{ margin:0; font-size:clamp(.6875rem,1.2vw,.8125rem); color:var(--ink-soft); line-height:1.85; }
+.s-card.hi{ background:var(--accent-soft); border-color:var(--accent); }
+.s-num{ font-family:var(--font-head); font-size:clamp(1.2rem,3vw,1.9rem); color:var(--accent-deep); display:block; line-height:1.3; }
+table.s-tbl{ width:100%; border-collapse:collapse; font-size:clamp(.6875rem,1.25vw,.8125rem); }
+table.s-tbl th, table.s-tbl td{ border:1px solid var(--line); padding:.45rem .6rem; text-align:left; line-height:1.75; }
+table.s-tbl th{ background:var(--surface-alt); font-weight:700; color:var(--ink-soft); white-space:nowrap; }
+table.s-tbl td.ok{ background:var(--accent-soft); color:var(--accent-deep); font-weight:700; }
+
+.deck-bar{ display:flex; align-items:center; gap:.7rem; padding:.7rem 1rem;
+  border-top:1px solid var(--line); background:var(--surface-alt); flex-wrap:wrap; }
+.deck-bar .nav{ display:flex; gap:.4rem; }
+.deck-bar button.nv{ width:36px; height:36px; border-radius:50%; border:1px solid var(--line-strong);
+  background:var(--surface); color:var(--ink); cursor:pointer; display:grid; place-items:center; }
+.deck-bar button.nv:hover{ border-color:var(--accent); color:var(--accent-deep); }
+.deck-bar button.nv:disabled{ opacity:.35; cursor:default; }
+.deck-bar button.nv svg{ width:16px; height:16px; }
+.deck-bar .now{ font-family:var(--font-head); font-size:.875rem; letter-spacing:.08em; color:var(--ink-soft); min-width:4.5em; }
+.dots{ display:flex; gap:.3rem; margin-left:auto; flex-wrap:wrap; }
+.dots button{ width:26px; height:26px; border-radius:6px; border:1px solid var(--line-strong);
+  background:var(--surface); color:var(--muted); font-size:.6875rem; cursor:pointer; font-family:inherit; }
+.dots button[aria-current="true"]{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+.deck-bar button:focus-visible, .dots button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.deck-title{ font-size:.75rem; color:var(--muted); width:100%; order:3; }
+
+/* ---------- 図解 ---------- */
+.figs{ display:grid; gap:1rem; }
+@media (min-width:820px){ .figs{ grid-template-columns:repeat(3,1fr); } }
+.fig{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.fig figcaption{ padding:.85rem 1rem; border-top:1px solid var(--line); font-size:.8125rem; color:var(--ink-soft); line-height:1.85; }
+.fig figcaption b{ display:block; color:var(--ink); font-size:.875rem; margin-bottom:.2rem; }
+.fig svg{ width:100%; height:auto; display:block; background:var(--surface); }
+.fg-box{ fill:var(--surface-alt); stroke:var(--line-strong); }
+.fg-box-a{ fill:var(--accent-soft); stroke:var(--accent); }
+.fg-box-w{ fill:var(--warn-soft); stroke:var(--warn); }
+.fg-t{ fill:var(--ink); font-family:var(--font-body); font-size:12px; }
+.fg-s{ fill:var(--ink-soft); font-family:var(--font-body); font-size:10.5px; }
+.fg-l{ stroke:var(--line-strong); stroke-width:1.3; fill:none; }
+.fg-a{ fill:var(--line-strong); }
+
+.grid2{ list-style:none; margin:0; padding:0; display:grid; gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+@media (min-width:720px){ .grid2{ grid-template-columns:repeat(2,1fr); } }
+.grid2 li{ background:var(--surface); padding:1.15rem 1.25rem; }
+.grid2 h3{ margin:0 0 .35rem; font-size:.9375rem; font-weight:700; }
+.grid2 p{ margin:0; font-size:.8125rem; color:var(--ink-soft); line-height:1.85; }
+
+.price{ list-style:none; margin:0; padding:0; display:grid; gap:1rem; }
+@media (min-width:720px){ .price{ grid-template-columns:repeat(3,1fr); } }
+.price li{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:1.35rem 1.3rem; }
+.price .lbl{ font-size:.6875rem; letter-spacing:.16em; color:var(--accent); font-weight:700; }
+.price h3{ font-family:var(--font-head); font-size:1.05rem; margin:.5rem 0 .45rem; font-weight:600; }
+.price .amt{ font-family:var(--font-head); font-size:1.45rem; margin:0 0 .65rem; }
+.price .amt small{ font-size:.75rem; color:var(--muted); font-family:var(--font-body); margin-left:.2rem; }
+.price ul{ margin:0; padding-left:1.15em; font-size:.8125rem; color:var(--ink-soft); line-height:1.95; }
+
+.disclosure{ background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius); padding:1.3rem 1.4rem; }
+.disclosure h3{ margin:0 0 .6rem; font-size:.9375rem; font-weight:700; }
+.disclosure p{ margin:0 0 .6rem; font-size:.8125rem; color:var(--ink-soft); line-height:1.9; }
+.disclosure p:last-child{ margin-bottom:0; }
+
+.site-foot{ border-top:1px solid var(--line); padding:2.25rem 0 3rem; }
+.site-foot .wrap{ display:flex; flex-wrap:wrap; gap:1rem 1.75rem; align-items:center; justify-content:space-between; }
+.site-foot a{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none; border-bottom:1px solid var(--line-strong); }
+.site-foot a:hover{ color:var(--ink); border-color:var(--accent); }
+.site-foot small{ font-size:.75rem; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="https://tahara-asuka.github.io/rakulabo/"><b>ラクラボ</b><span>RAKU LABO</span></a>
+    <a class="head-link" href="https://tahara-asuka.github.io/rakulabo/">ラクラボのサイトへ →</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">PROPOSAL &amp; DIAGRAM</p>
+    <h1>読み終わったときに、<br>次の一歩が決まっている資料。</h1>
+    <p>社会保険労務士事務所への提案を例に、8枚の資料をそのまま公開しています。<b>下の「＞」で実際にめくれます。</b>キーボードの左右キーでも動きます。</p>
+    <p class="note">「まつなが社会保険労務士事務所」は制作サンプルのための架空の事務所です。</p>
+  </div>
+</section>
+
+<!-- ================= スライド ================= -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">SAMPLE DECK</p>
+      <h2>提案資料のサンプル（全8枚）</h2>
+      <p>「問い合わせ対応に時間を取られている」という相談に対して作った資料です。提案そのものより、<b>相手が判断できる材料が並んでいるか</b>を大事にしています。</p>
+    </div>
+
+    <div class="deck">
+      <div class="deck-stage" id="stage">
+
+        <!-- 1 -->
+        <section class="slide s-cover" data-on="1" aria-label="スライド1">
+          <p class="s-tag">ご提案</p>
+          <h3 class="s-h">問い合わせ対応を、<br>仕組みに変える</h3>
+          <p class="s-lead" style="max-width:32em">スタッフの手を止めずに、初回相談を取りこぼさないための3か月計画</p>
+          <p class="s-meta">まつなが社会保険労務士事務所 御中<br>2026年9月 ／ ラクラボ</p>
+          <span class="s-no">1 / 8</span>
+        </section>
+
+        <!-- 2 -->
+        <section class="slide" data-on="0" aria-label="スライド2">
+          <p class="s-tag">現状</p>
+          <h3 class="s-h">いま起きていること</h3>
+          <div class="s-body">
+            <div class="s-grid c3">
+              <div class="s-card"><span class="s-num">1日 14件</span><h4>問い合わせの件数</h4><p>電話7件、フォーム5件、メール2件。窓口が3つに分かれています。</p></div>
+              <div class="s-card"><span class="s-num">2〜3分</span><h4>1件あたりの転記時間</h4><p>受けた内容を台帳に書き写す作業。1日あたり30〜40分です。</p></div>
+              <div class="s-card hi"><span class="s-num">週 3件</span><h4>折り返せていない件数</h4><p>面談中・外出中に入った電話。ここが最も損失になっています。</p></div>
+            </div>
+          </div>
+          <span class="s-no">2 / 8</span>
+        </section>
+
+        <!-- 3 -->
+        <section class="slide" data-on="0" aria-label="スライド3">
+          <p class="s-tag">課題</p>
+          <h3 class="s-h">問題は「忙しさ」ではなく、<br>窓口が3つあることです</h3>
+          <p class="s-lead">同じ内容の問い合わせが、電話・フォーム・メールの3か所から入ります。どこに何が来たかを人が覚えておく必要があり、面談が続いた日に抜けが出ます。</p>
+          <div class="s-body">
+            <svg class="s-svg" viewBox="0 0 760 190" role="img" aria-label="電話・フォーム・メールの3つの窓口がそれぞれ担当者の記憶に依存し、台帳への転記が漏れる図">
+              <rect class="fg-box" x="6" y="14" width="120" height="38" rx="8"/><text class="fg-t" x="66" y="38" text-anchor="middle">電話</text>
+              <rect class="fg-box" x="6" y="72" width="120" height="38" rx="8"/><text class="fg-t" x="66" y="96" text-anchor="middle">フォーム</text>
+              <rect class="fg-box" x="6" y="130" width="120" height="38" rx="8"/><text class="fg-t" x="66" y="154" text-anchor="middle">メール</text>
+              <path class="fg-l" d="M130 33 H210 V91 H250"/><path class="fg-l" d="M130 91 H250"/><path class="fg-l" d="M130 149 H210 V91 H250"/>
+              <path class="fg-a" d="M250 91 l-7 -4.5 v9 z"/>
+              <rect class="fg-box-w" x="256" y="62" width="180" height="58" rx="8"/>
+              <text class="fg-t" x="346" y="86" text-anchor="middle">担当者の記憶</text>
+              <text class="fg-s" x="346" y="105" text-anchor="middle">面談が続くと抜ける</text>
+              <path class="fg-l" d="M440 91 H500"/><path class="fg-a" d="M500 91 l-7 -4.5 v9 z"/>
+              <rect class="fg-box" x="506" y="62" width="180" height="58" rx="8"/>
+              <text class="fg-t" x="596" y="86" text-anchor="middle">台帳へ手で転記</text>
+              <text class="fg-s" x="596" y="105" text-anchor="middle">週3件が記録されない</text>
+            </svg>
+          </div>
+          <span class="s-no">3 / 8</span>
+        </section>
+
+        <!-- 4 -->
+        <section class="slide" data-on="0" aria-label="スライド4">
+          <p class="s-tag">ご提案</p>
+          <h3 class="s-h">窓口を1つにまとめ、<br>記録は自動にします</h3>
+          <div class="s-body">
+            <svg class="s-svg" viewBox="0 0 760 190" role="img" aria-label="3つの窓口をチャットボットとフォームに集約し、台帳へ自動追記し、読み取れないものは要確認へ回す図">
+              <rect class="fg-box" x="6" y="30" width="120" height="38" rx="8"/><text class="fg-t" x="66" y="54" text-anchor="middle">サイト訪問</text>
+              <rect class="fg-box" x="6" y="112" width="120" height="38" rx="8"/><text class="fg-t" x="66" y="136" text-anchor="middle">電話</text>
+              <path class="fg-l" d="M130 49 H180"/><path class="fg-a" d="M180 49 l-7 -4.5 v9 z"/>
+              <path class="fg-l" d="M130 131 H180"/><path class="fg-a" d="M180 131 l-7 -4.5 v9 z"/>
+              <rect class="fg-box-a" x="186" y="24" width="170" height="50" rx="8"/>
+              <text class="fg-t" x="271" y="45" text-anchor="middle">チャットボット</text>
+              <text class="fg-s" x="271" y="63" text-anchor="middle">24時間・一次受付</text>
+              <rect class="fg-box" x="186" y="106" width="170" height="50" rx="8"/>
+              <text class="fg-t" x="271" y="127" text-anchor="middle">留守番＋折返し依頼</text>
+              <text class="fg-s" x="271" y="145" text-anchor="middle">要件だけ先に取る</text>
+              <path class="fg-l" d="M360 49 H400 V91 H440"/><path class="fg-l" d="M360 131 H400 V91"/>
+              <path class="fg-a" d="M440 91 l-7 -4.5 v9 z"/>
+              <rect class="fg-box-a" x="446" y="62" width="150" height="58" rx="8"/>
+              <text class="fg-t" x="521" y="86" text-anchor="middle">相談台帳</text>
+              <text class="fg-s" x="521" y="105" text-anchor="middle">自動で1行追記</text>
+              <path class="fg-l" d="M600 91 H650"/><path class="fg-a" d="M650 91 l-7 -4.5 v9 z"/>
+              <rect class="fg-box-w" x="656" y="62" width="98" height="58" rx="8"/>
+              <text class="fg-t" x="705" y="86" text-anchor="middle">要確認</text>
+              <text class="fg-s" x="705" y="105" text-anchor="middle">人が見る</text>
+            </svg>
+          </div>
+          <span class="s-no">4 / 8</span>
+        </section>
+
+        <!-- 5 -->
+        <section class="slide" data-on="0" aria-label="スライド5">
+          <p class="s-tag">効果</p>
+          <h3 class="s-h">何がどう変わるか</h3>
+          <div class="s-body">
+            <table class="s-tbl">
+              <thead><tr><th style="width:26%">項目</th><th>いま</th><th>導入後</th></tr></thead>
+              <tbody>
+                <tr><td>受付できる時間</td><td>平日 9:00〜18:00</td><td class="ok">24時間</td></tr>
+                <tr><td>台帳への転記</td><td>1日30〜40分の手作業</td><td class="ok">自動（0分）</td></tr>
+                <tr><td>折り返し漏れ</td><td>週3件</td><td class="ok">記録が残るため0件を目指せます</td></tr>
+                <tr><td>よくある質問</td><td>そのつど職員が回答</td><td class="ok">ボットが回答／判断が要るものだけ職員へ</td></tr>
+                <tr><td>相談内容の把握</td><td>担当者しか分からない</td><td class="ok">台帳1枚で全員が見られる</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <span class="s-no">5 / 8</span>
+        </section>
+
+        <!-- 6 -->
+        <section class="slide" data-on="0" aria-label="スライド6">
+          <p class="s-tag">注意点</p>
+          <h3 class="s-h">先にお伝えしておくこと</h3>
+          <div class="s-body">
+            <div class="s-grid c2">
+              <div class="s-card"><h4>すべては自動になりません</h4><p>助成金の可否や、労務の個別判断は職員の方が答えるべき領域です。ボットは「どの職員に渡すか」までを担当します。</p></div>
+              <div class="s-card"><h4>最初の1か月は調整が要ります</h4><p>想定していない聞かれ方が必ず出ます。実際の問い合わせを見ながら受け答えを足していきます。</p></div>
+              <div class="s-card"><h4>電話を無くす提案ではありません</h4><p>電話でしか話せない方もいます。電話は残したうえで、要件だけ先に取れる形にします。</p></div>
+              <div class="s-card hi"><h4>効果が出にくい場合</h4><p>問い合わせが1日1〜2件の規模では、手作業のほうが早いです。今回は1日14件のため、導入をお勧めしています。</p></div>
+            </div>
+          </div>
+          <span class="s-no">6 / 8</span>
+        </section>
+
+        <!-- 7 -->
+        <section class="slide" data-on="0" aria-label="スライド7">
+          <p class="s-tag">進め方</p>
+          <h3 class="s-h">3か月の進め方と費用</h3>
+          <div class="s-body">
+            <div class="s-grid c3">
+              <div class="s-card"><h4>1か月目</h4><p>過去の問い合わせを一緒に洗い出し、受け答えを設計します。この段階で、答えるべきでない質問の線引きも決めます。</p><p style="margin-top:.5rem;color:var(--accent-deep);font-weight:700">60,000円</p></div>
+              <div class="s-card"><h4>2か月目</h4><p>チャットボットの設置と、台帳への自動追記を実装します。既存サイトに1行足すだけで設置できます。</p><p style="margin-top:.5rem;color:var(--accent-deep);font-weight:700">80,000円</p></div>
+              <div class="s-card hi"><h4>3か月目</h4><p>実際の問い合わせを見ながら受け答えを調整します。ここが仕上がりを決めます。</p><p style="margin-top:.5rem;color:var(--accent-deep);font-weight:700">40,000円</p></div>
+            </div>
+            <p class="s-lead" style="margin-top:.8rem">合計 180,000円（税別）。月々のご請求で、途中で中止された場合はそこまでの分のみ頂戴します。</p>
+          </div>
+          <span class="s-no">7 / 8</span>
+        </section>
+
+        <!-- 8 -->
+        <section class="slide" data-on="0" aria-label="スライド8">
+          <p class="s-tag">次の一歩</p>
+          <h3 class="s-h">まず、1か月目だけ<br>お試しいただけます</h3>
+          <p class="s-lead">いきなり3か月をお決めいただく必要はありません。1か月目の「洗い出しと設計」だけをご覧いただき、出てきた設計図を見てから続けるかをご判断ください。設計図はそのままお渡しします。他社に依頼される場合にもお使いいただけます。</p>
+          <div class="s-body">
+            <div class="s-grid c3">
+              <div class="s-card hi"><h4>1. 洗い出し（60分）</h4><p>過去3か月の問い合わせを一緒に見ます。オンラインで結構です。</p></div>
+              <div class="s-card"><h4>2. 設計図のご提出</h4><p>受け答えの一覧と、自動化する範囲の線引きをお出しします。</p></div>
+              <div class="s-card"><h4>3. ご判断</h4><p>続けるかどうかを、そこでお決めください。</p></div>
+            </div>
+          </div>
+          <span class="s-no">8 / 8</span>
+        </section>
+
+      </div>
+
+      <div class="deck-bar">
+        <div class="nav">
+          <button class="nv" id="prev" type="button" aria-label="前のスライド">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <button class="nv" id="next" type="button" aria-label="次のスライド">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <span class="now" id="now">1 / 8</span>
+        <div class="dots" id="dots"></div>
+        <span class="deck-title" id="dtitle"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 図解 ================= -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">DIAGRAM</p>
+      <h2>図解のサンプル</h2>
+      <p>資料の中で使う図です。すべてSVGで描いているので、拡大しても輪郭が崩れず、資料にもサイトにもそのまま置けます。色は資料の配色に合わせて変えられます。</p>
+    </div>
+
+    <div class="figs">
+      <figure class="fig">
+        <svg viewBox="0 0 340 210" role="img" aria-label="申込から契約までの5段階と、各段階の残数を示すファネル図">
+          <rect class="fg-box-a" x="40" y="16" width="260" height="26" rx="5"/><text class="fg-t" x="170" y="34" text-anchor="middle">問い合わせ 100</text>
+          <rect class="fg-box-a" x="64" y="52" width="212" height="26" rx="5" opacity=".85"/><text class="fg-t" x="170" y="70" text-anchor="middle">返信あり 62</text>
+          <rect class="fg-box-a" x="90" y="88" width="160" height="26" rx="5" opacity=".7"/><text class="fg-t" x="170" y="106" text-anchor="middle">初回相談 34</text>
+          <rect class="fg-box-a" x="112" y="124" width="116" height="26" rx="5" opacity=".55"/><text class="fg-t" x="170" y="142" text-anchor="middle">見積提示 21</text>
+          <rect class="fg-box-a" x="132" y="160" width="76" height="26" rx="5" opacity=".4"/><text class="fg-t" x="170" y="178" text-anchor="middle">契約 9</text>
+        </svg>
+        <figcaption><b>ファネル図</b>どこで人が減っているかを1枚で見せます。数字は必ず実測を入れます。</figcaption>
+      </figure>
+
+      <figure class="fig">
+        <svg viewBox="0 0 340 210" role="img" aria-label="縦軸に手間、横軸に効果を取り、4つの施策を配置した優先順位マトリクス">
+          <line class="fg-l" x1="46" y1="176" x2="316" y2="176"/><line class="fg-l" x1="46" y1="176" x2="46" y2="20"/>
+          <text class="fg-s" x="316" y="196" text-anchor="end">効果 →</text>
+          <text class="fg-s" x="34" y="26" text-anchor="end" transform="rotate(-90 34 26)">手間 →</text>
+          <line class="fg-l" x1="181" y1="20" x2="181" y2="176" stroke-dasharray="3 4"/>
+          <line class="fg-l" x1="46" y1="98" x2="316" y2="98" stroke-dasharray="3 4"/>
+          <circle cx="252" cy="140" r="9" fill="var(--accent)"/><text class="fg-t" x="252" y="162" text-anchor="middle">FAQ自動化</text>
+          <circle cx="238" cy="60" r="9" fill="var(--warn)"/><text class="fg-t" x="238" y="46" text-anchor="middle">基幹刷新</text>
+          <circle cx="108" cy="146" r="9" fill="var(--accent)" opacity=".55"/><text class="fg-t" x="108" y="168" text-anchor="middle">定型文整備</text>
+          <circle cx="96" cy="54" r="9" fill="var(--muted)"/><text class="fg-t" x="96" y="40" text-anchor="middle">紙の電子化</text>
+        </svg>
+        <figcaption><b>優先順位マトリクス</b>「何から手をつけるか」を決める会議で使います。右下から着手します。</figcaption>
+      </figure>
+
+      <figure class="fig">
+        <svg viewBox="0 0 340 210" role="img" aria-label="担当者・システム・お客様の3者が問い合わせから記録までにどう関わるかを示す役割分担図">
+          <text class="fg-s" x="56" y="22" text-anchor="middle">お客様</text>
+          <text class="fg-s" x="170" y="22" text-anchor="middle">仕組み</text>
+          <text class="fg-s" x="284" y="22" text-anchor="middle">職員</text>
+          <line class="fg-l" x1="56" y1="30" x2="56" y2="196" stroke-dasharray="3 5"/>
+          <line class="fg-l" x1="170" y1="30" x2="170" y2="196" stroke-dasharray="3 5"/>
+          <line class="fg-l" x1="284" y1="30" x2="284" y2="196" stroke-dasharray="3 5"/>
+          <rect class="fg-box" x="18" y="42" width="76" height="24" rx="5"/><text class="fg-s" x="56" y="58" text-anchor="middle">質問する</text>
+          <path class="fg-l" d="M96 54 H160"/><path class="fg-a" d="M160 54 l-7 -4.5 v9 z"/>
+          <rect class="fg-box-a" x="132" y="80" width="76" height="24" rx="5"/><text class="fg-s" x="170" y="96" text-anchor="middle">一次回答</text>
+          <rect class="fg-box-a" x="132" y="116" width="76" height="24" rx="5"/><text class="fg-s" x="170" y="132" text-anchor="middle">台帳へ記録</text>
+          <path class="fg-l" d="M210 128 H274"/><path class="fg-a" d="M274 128 l-7 -4.5 v9 z"/>
+          <rect class="fg-box" x="246" y="152" width="76" height="24" rx="5"/><text class="fg-s" x="284" y="168" text-anchor="middle">判断が要る分</text>
+        </svg>
+        <figcaption><b>役割分担図</b>「どこまでを機械がやるか」を先に合意しておくための図です。</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 構成の型 ================= -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">METHOD</p>
+      <h2>資料をつくるときの型</h2>
+      <p>この順番で並べています。提案を通すためではなく、<b>相手が自分で判断できるようにする</b>ための順番です。</p>
+    </div>
+    <ul class="grid2">
+      <li><h3>1｜現状を数字で置く</h3><p>「忙しい」ではなく「1日14件、転記に30〜40分」。ここが曖昧なままだと、あとの話が全部ぼやけます。数字は必ず相手から聞き出します。</p></li>
+      <li><h3>2｜課題を1つに絞る</h3><p>問題は複数あります。それでも「原因はこれです」と1つに絞ります。絞らない資料は、読み終わっても何も決まりません。</p></li>
+      <li><h3>3｜提案は図で見せる</h3><p>文章で書くと、読み手ごとに違う絵が浮かびます。図にすれば、そこがずれません。</p></li>
+      <li><h3>4｜効果は比較表で</h3><p>導入後の姿だけ書くと信用されません。「いま」と並べて、変わらない項目も正直に載せます。</p></li>
+      <li><h3>5｜できないことを書く</h3><p>提案書にわざわざ弱点を書きます。ここを飛ばした提案は、導入後に必ず揉めます。先に書いておくほうが結果的に通ります。</p></li>
+      <li><h3>6｜最後は小さく始められる形に</h3><p>全額を一度に決めさせません。1か月目だけ、成果物は持ち帰れる、という形にします。相手の決断の重さを下げます。</p></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= 料金 ================= -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">PRICE</p>
+      <h2>料金の目安</h2>
+      <p>枚数と、こちらで調べる範囲によって変わります。素材や数字をご提供いただける場合は下限に近くなります。</p>
+    </div>
+    <ul class="price">
+      <li><span class="lbl">DIAGRAM</span><h3>図解のみ</h3><p class="amt">3,000円<small>〜 / 1点</small></p>
+        <ul><li>SVGとPNGで納品</li><li>配色は資料に合わせます</li><li>修正2回まで</li></ul></li>
+      <li><span class="lbl">DECK</span><h3>提案資料</h3><p class="amt">20,000円<small>〜 / 10枚まで</small></p>
+        <ul><li>構成から作成</li><li>図解3点まで込み</li><li>PowerPoint／PDF／Web</li><li>修正2回まで</li></ul></li>
+      <li><span class="lbl">FULL</span><h3>資料＋ヒアリング</h3><p class="amt">45,000円<small>〜</small></p>
+        <ul><li>60分のヒアリングから</li><li>現状の数字の整理</li><li>提案の骨子づくり</li><li>資料一式（15枚まで）</li></ul></li>
+    </ul>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="disclosure">
+      <h3>このページについて</h3>
+      <p>掲載している資料は<b>制作サンプル</b>です。「まつなが社会保険労務士事務所」は架空の事務所で、件数・金額・効果はすべて説明のために設定した数字です。実在の顧問先の情報ではありません。</p>
+      <p>実際のご依頼では、まず御社の数字を伺うところから始めます。<b>数字が入っていない提案資料は、読む側にとって判断材料になりません。</b></p>
+      <p>納品形式は PowerPoint・PDF・Web（このページのような形）から選べます。図解は SVG でお渡しするため、あとから色や文字を変更できます。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <a href="https://tahara-asuka.github.io/rakulabo/">ラクラボ トップ</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/chatbot/">AIチャットボット</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/mail-to-sheet/">業務自動化の事例</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/lueur/">喫茶店のブランドサイト</a>
+    </div>
+    <small>制作：ラクラボ（田原 明日翔）</small>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var slides = [].slice.call(document.querySelectorAll('#stage .slide'));
+  var titles = ["表紙","現状","課題","ご提案","効果","注意点","進め方と費用","次の一歩"];
+  var now = document.getElementById('now');
+  var dots = document.getElementById('dots');
+  var dtitle = document.getElementById('dtitle');
+  var prev = document.getElementById('prev');
+  var next = document.getElementById('next');
+  var i = 0;
+
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.setAttribute('data-on', k === i ? '1' : '0'); });
+    now.textContent = (i+1) + ' / ' + slides.length;
+    dtitle.textContent = titles[i] ? '── ' + titles[i] : '';
+    [].forEach.call(dots.children, function(b, k){ b.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+  }
+
+  slides.forEach(function(s, k){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = (k+1);
+    b.setAttribute('aria-label', (k+1) + '枚目：' + titles[k]);
+    b.addEventListener('click', function(){ show(k); });
+    dots.appendChild(b);
+  });
+
+  prev.addEventListener('click', function(){ show(i-1); });
+  next.addEventListener('click', function(){ show(i+1); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight') { show(i+1); }
+    if (e.key === 'ArrowLeft')  { show(i-1); }
+  });
+
+  show(0);
+})();
+</script>
+
+</body>
+</html>
