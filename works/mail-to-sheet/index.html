@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>問い合わせメールを、そのまま台帳にする（業務自動化の事例）｜ラクラボ</title>
+<meta name="description" content="受信した問い合わせメールから、名前・連絡先・用件・希望日を抜き出してスプレッドシートへ自動で追記する仕組みです。実際にこのページ上で動かせます。制作：ラクラボ（田原明日翔）">
+<meta property="og:type" content="website">
+<meta property="og:title" content="問い合わせメールを、そのまま台帳にする（業務自動化の事例）">
+<meta property="og:description" content="メールから必要な項目だけを抜き出して台帳に自動追記。読み取れなかったものは別シートへ逃がします。ページ上で実際に動かせます。">
+<meta name="theme-color" content="#F7F5F1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@500;600&display=swap">
+
+<style>
+:root{
+  --ground:#F7F5F1; --surface:#FFFFFF; --surface-alt:#EFEBE4;
+  --ink:#23302E; --ink-soft:#55625F; --muted:#8A9391;
+  --line:#E1DCD3; --line-strong:#CDC6BA;
+  --accent:#2F6F62; --accent-deep:#23574C; --accent-soft:#DCE8E4;
+  --warn:#B4703A; --warn-soft:#F6EADF;
+  --code-bg:#20302C; --code-tx:#D8E4E0; --code-dim:#7E9891; --code-key:#8FD3BE; --code-str:#E3C08D;
+  --font-body:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+  --font-head:"Zen Old Mincho","Hiragino Mincho ProN",serif;
+  --font-mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --radius:14px; --shadow:0 1px 2px rgba(35,48,46,.05),0 8px 28px rgba(35,48,46,.07);
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+    --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+    --line:#2A3533; --line-strong:#3A4744;
+    --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+    --warn:#D79A63; --warn-soft:#2E2620;
+    --code-bg:#101816;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+  --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+  --line:#2A3533; --line-strong:#3A4744;
+  --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+  --warn:#D79A63; --warn-soft:#2E2620; --code-bg:#101816;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+body{ margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-body); font-size:15px; line-height:1.95; -webkit-font-smoothing:antialiased; }
+a{ color:inherit; }
+.wrap{ width:min(100% - 2.5rem, var(--wrap)); margin-inline:auto; }
+.sr{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+/* header */
+.site-head{ border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:saturate(1.2) blur(8px); position:sticky; top:0; z-index:20; }
+.site-head .wrap{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 0; }
+.brand{ display:flex; align-items:baseline; gap:.6rem; text-decoration:none; }
+.brand b{ font-family:var(--font-head); font-size:1.05rem; letter-spacing:.14em; font-weight:600; }
+.brand span{ font-size:.6875rem; letter-spacing:.22em; color:var(--muted); }
+.head-link{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none;
+  border-bottom:1px solid var(--line-strong); padding-bottom:2px; white-space:nowrap; }
+.head-link:hover{ color:var(--ink); border-color:var(--accent); }
+
+/* hero */
+.hero{ padding:clamp(3rem,7vw,5.5rem) 0 clamp(1.5rem,3vw,2.5rem); }
+.eyebrow{ font-size:.75rem; letter-spacing:.2em; color:var(--accent); margin:0 0 1rem; font-weight:700; }
+.hero h1{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.6rem,4.2vw,2.5rem);
+  line-height:1.6; letter-spacing:.03em; margin:0 0 1.1rem; text-wrap:balance; }
+.hero p{ margin:0; max-width:36em; color:var(--ink-soft); }
+.hero .note{ margin-top:1.4rem; font-size:.8125rem; color:var(--muted);
+  border-left:2px solid var(--line-strong); padding-left:.9rem; }
+
+/* before/after */
+.ba{ display:grid; gap:1rem; margin:clamp(2rem,4vw,3rem) 0 0; }
+@media (min-width:760px){ .ba{ grid-template-columns:1fr auto 1fr; align-items:stretch; } }
+.ba-card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:1.3rem 1.4rem; }
+.ba-card.after{ border-color:var(--accent); background:var(--accent-soft); }
+.ba-card h3{ margin:0 0 .8rem; font-size:.8125rem; letter-spacing:.14em; color:var(--muted); font-weight:700; }
+.ba-card.after h3{ color:var(--accent-deep); }
+.ba-card ol{ margin:0; padding-left:1.3em; font-size:.875rem; line-height:2.05; color:var(--ink-soft); }
+.ba-card.after ol{ color:var(--ink); }
+.ba-arrow{ display:grid; place-items:center; color:var(--line-strong); }
+.ba-arrow svg{ width:30px; height:30px; }
+@media (max-width:759px){ .ba-arrow{ transform:rotate(90deg); } }
+
+/* section */
+.sec{ padding:clamp(3rem,6vw,4.75rem) 0; border-top:1px solid var(--line); }
+.sec-head{ margin-bottom:clamp(1.6rem,3.2vw,2.4rem); }
+.sec-head h2{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.3rem,3vw,1.7rem);
+  letter-spacing:.04em; margin:.5rem 0 .6rem; }
+.sec-head p{ margin:0; color:var(--ink-soft); max-width:42em; }
+
+/* demo */
+.lab{ display:grid; gap:1.25rem; }
+@media (min-width:940px){ .lab{ grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); align-items:start; } }
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+.card-head{ display:flex; align-items:center; gap:.6rem; padding:.7rem 1rem; border-bottom:1px solid var(--line); background:var(--surface-alt); }
+.card-head b{ font-size:.8125rem; letter-spacing:.06em; }
+.card-head .tag{ margin-left:auto; font-size:.6875rem; letter-spacing:.1em; color:var(--muted); }
+.card-body{ padding:1rem; }
+
+.picker{ display:flex; flex-wrap:wrap; gap:.45rem; margin-bottom:.8rem; }
+.picker button{ font-family:inherit; font-size:.75rem; padding:.4rem .8rem; border-radius:999px; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--line-strong); transition:.15s; }
+.picker button:hover{ border-color:var(--accent); color:var(--accent-deep); }
+.picker button[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.picker button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+textarea#mail{ width:100%; min-height:230px; resize:vertical; font-family:var(--font-mono); font-size:12.5px;
+  line-height:1.85; padding:.85rem .9rem; border:1px solid var(--line-strong); border-radius:10px;
+  background:var(--ground); color:var(--ink); }
+textarea#mail:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+.run{ display:flex; gap:.6rem; align-items:center; margin-top:.85rem; flex-wrap:wrap; }
+.btn{ font-family:inherit; font-size:.875rem; font-weight:700; padding:.62rem 1.35rem; border-radius:999px;
+  cursor:pointer; border:0; background:var(--accent); color:#fff; }
+.btn:hover{ background:var(--accent-deep); }
+.btn:focus-visible{ outline:2px solid var(--accent-deep); outline-offset:2px; }
+.btn.ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--line-strong); font-weight:400; }
+.btn.ghost:hover{ color:var(--ink); border-color:var(--accent); }
+.run small{ color:var(--muted); font-size:.75rem; }
+
+/* sheet */
+.sheet-wrap{ overflow-x:auto; }
+table.sheet{ width:100%; border-collapse:collapse; font-size:12.5px; min-width:640px; }
+table.sheet th, table.sheet td{ border:1px solid var(--line); padding:.5rem .6rem; text-align:left; vertical-align:top; line-height:1.7; }
+table.sheet th{ background:var(--surface-alt); font-weight:700; font-size:11.5px; letter-spacing:.04em; color:var(--ink-soft); white-space:nowrap; }
+table.sheet td{ color:var(--ink); }
+table.sheet tr.fresh td{ animation:flash 1.4s ease-out; }
+@keyframes flash{ from{ background:var(--accent-soft); } to{ background:transparent; } }
+@media (prefers-reduced-motion: reduce){ table.sheet tr.fresh td{ animation:none; } }
+.sheet-empty{ padding:2.5rem 1rem; text-align:center; color:var(--muted); font-size:.8125rem; }
+
+.tabs{ display:flex; gap:.4rem; padding:.7rem 1rem 0; background:var(--surface-alt); }
+.tabs button{ font-family:inherit; font-size:.75rem; padding:.42rem .85rem; border-radius:8px 8px 0 0; cursor:pointer;
+  border:1px solid var(--line); border-bottom:0; background:var(--surface-alt); color:var(--ink-soft); }
+.tabs button[aria-selected="true"]{ background:var(--surface); color:var(--ink); font-weight:700; }
+.tabs .badge{ display:inline-block; min-width:17px; padding:0 4px; margin-left:.35rem; border-radius:999px;
+  background:var(--warn); color:#fff; font-size:10px; line-height:17px; text-align:center; }
+
+.logline{ font-family:var(--font-mono); font-size:11.5px; color:var(--muted); padding:.65rem 1rem;
+  border-top:1px solid var(--line); background:var(--surface-alt); min-height:2.4em; }
+
+/* code */
+pre.code{ margin:0; background:var(--code-bg); color:var(--code-tx); border-radius:var(--radius);
+  padding:1.2rem 1.3rem; overflow-x:auto; font-family:var(--font-mono); font-size:12.5px; line-height:1.85; }
+pre.code .c{ color:var(--code-dim); }
+pre.code .k{ color:var(--code-key); }
+pre.code .s{ color:var(--code-str); }
+
+/* lists */
+.grid2{ list-style:none; margin:0; padding:0; display:grid; gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+@media (min-width:720px){ .grid2{ grid-template-columns:repeat(2,1fr); } }
+.grid2 li{ background:var(--surface); padding:1.15rem 1.25rem; }
+.grid2 h3{ margin:0 0 .35rem; font-size:.9375rem; font-weight:700; }
+.grid2 p{ margin:0; font-size:.8125rem; color:var(--ink-soft); line-height:1.85; }
+
+.callout{ background:var(--warn-soft); border:1px solid var(--warn); border-radius:var(--radius); padding:1.2rem 1.35rem; }
+.callout h3{ margin:0 0 .5rem; font-size:.9375rem; font-weight:700; color:var(--warn); }
+.callout p{ margin:0; font-size:.8438rem; color:var(--ink-soft); line-height:1.9; }
+
+.disclosure{ background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius); padding:1.3rem 1.4rem; }
+.disclosure h3{ margin:0 0 .6rem; font-size:.9375rem; font-weight:700; }
+.disclosure p{ margin:0 0 .6rem; font-size:.8125rem; color:var(--ink-soft); line-height:1.9; }
+.disclosure p:last-child{ margin-bottom:0; }
+
+.site-foot{ border-top:1px solid var(--line); padding:2.25rem 0 3rem; }
+.site-foot .wrap{ display:flex; flex-wrap:wrap; gap:1rem 1.75rem; align-items:center; justify-content:space-between; }
+.site-foot a{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none; border-bottom:1px solid var(--line-strong); }
+.site-foot a:hover{ color:var(--ink); border-color:var(--accent); }
+.site-foot small{ font-size:.75rem; color:var(--muted); }
+</style>
+</head>
+
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="https://tahara-asuka.github.io/rakulabo/"><b>ラクラボ</b><span>RAKU LABO</span></a>
+    <a class="head-link" href="https://tahara-asuka.github.io/rakulabo/">ラクラボのサイトへ →</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">AUTOMATION CASE</p>
+    <h1>届いた問い合わせを、<br>そのまま台帳にする。</h1>
+    <p>問い合わせメールから、お名前・連絡先・ご用件・希望日を抜き出して、スプレッドシートへ自動で追記する仕組みです。<b>下のメール文面を編集して「実行」を押すと、その場で動きます。</b></p>
+    <p class="note">実際に運用しているものと同じ判定ルールを、このページ上で再現しています。</p>
+
+    <div class="ba">
+      <div class="ba-card">
+        <h3>いままで</h3>
+        <ol>
+          <li>メールを開く</li>
+          <li>名前と電話番号をコピーする</li>
+          <li>スプレッドシートに貼る</li>
+          <li>用件を要約して書き足す</li>
+          <li>対応済みかどうかを覚えておく</li>
+        </ol>
+      </div>
+      <div class="ba-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </div>
+      <div class="ba-card after">
+        <h3>いま</h3>
+        <ol>
+          <li>メールが届く</li>
+          <li>台帳に1行増えている</li>
+        </ol>
+        <p style="margin:.9rem 0 0;font-size:.8125rem;color:var(--accent-deep)">読み取れなかったメールは「要確認」に分けられ、人が見ます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 実演 ===================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">TRY IT</p>
+      <h2>実際に動かしてみてください</h2>
+      <p>下のボタンでメールの例を切り替えられます。本文を書き換えても構いません。「実行」を押すと、右の台帳に1行追加されます。4つ目の例は、わざと情報が足りないメールです。</p>
+    </div>
+
+    <div class="lab">
+
+      <div class="card">
+        <div class="card-head">
+          <b>受信メール</b>
+          <span class="tag">INBOX</span>
+        </div>
+        <div class="card-body">
+          <div class="picker" id="picker" role="group" aria-label="メールの例を選ぶ"></div>
+          <label class="sr" for="mail">メール本文</label>
+          <textarea id="mail" spellcheck="false"></textarea>
+          <div class="run">
+            <button class="btn" id="run" type="button">実行する</button>
+            <button class="btn ghost" id="clear" type="button">台帳を空にする</button>
+            <small id="hint"></small>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="tabs" role="tablist">
+          <button id="tab-ok" role="tab" aria-selected="true" aria-controls="pane-ok" type="button">問い合わせ台帳</button>
+          <button id="tab-ng" role="tab" aria-selected="false" aria-controls="pane-ng" type="button">要確認<span class="badge" id="ngCount" hidden>0</span></button>
+        </div>
+        <div id="pane-ok" role="tabpanel" aria-labelledby="tab-ok">
+          <div class="sheet-wrap">
+            <table class="sheet">
+              <thead>
+                <tr>
+                  <th>受信日時</th><th>お名前</th><th>連絡先</th><th>ご用件</th><th>ご希望日</th><th>要約</th><th>対応</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+          <div class="sheet-empty" id="emptyOk">まだ1件も追記されていません。左の「実行する」を押してください。</div>
+        </div>
+        <div id="pane-ng" role="tabpanel" aria-labelledby="tab-ng" hidden>
+          <div class="sheet-wrap">
+            <table class="sheet">
+              <thead><tr><th>受信日時</th><th>差出人</th><th>足りなかった項目</th><th>本文</th></tr></thead>
+              <tbody id="rowsNg"></tbody>
+            </table>
+          </div>
+          <div class="sheet-empty" id="emptyNg">いまのところ、読み取れなかったメールはありません。</div>
+        </div>
+        <div class="logline" id="log">待機中</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 設計 ===================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">DESIGN</p>
+      <h2>作るときに決めたこと</h2>
+      <p>この手の自動化でいちばん危ないのは、失敗したことに気づかないまま動き続けることです。そこを最初に潰しました。</p>
+    </div>
+
+    <ul class="grid2">
+      <li>
+        <h3>読み取れないものは、混ぜない</h3>
+        <p>連絡先が見つからない、用件が判定できない。そうしたメールは台帳に入れず「要確認」へ分けます。中途半端な行が台帳に混ざるほうが、あとで困ります。</p>
+      </li>
+      <li>
+        <h3>二重登録を防ぐ</h3>
+        <p>処理したメールにはラベルを付け、次回はそれを除いて検索します。実行が重なっても同じ行が増えません。</p>
+      </li>
+      <li>
+        <h3>元のメールへ戻れるようにする</h3>
+        <p>各行にメールのIDを持たせ、台帳から元のメールを開けるようにします。要約だけでは判断できない場面が必ずあるためです。</p>
+      </li>
+      <li>
+        <h3>判定ルールは、お店ごとに書き換える</h3>
+        <p>用件の分け方も、拾う項目も、業種によって変わります。予約中心の店舗と、見積依頼が多い事務所では別物です。</p>
+      </li>
+    </ul>
+
+    <div class="callout" style="margin-top:1.25rem">
+      <h3>この仕組みに向かない場合</h3>
+      <p>問い合わせが1日1〜2件しかない場合は、自動化しても効果が実感しにくいです。手で転記しても数分で終わるためです。逆に、1日10件を超えたあたりから、転記そのものより「転記し忘れ」の損失が効いてきます。導入をお勧めするかどうかは、そこを伺ってから判断します。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== コード ===================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">CODE</p>
+      <h2>実際の仕組み</h2>
+      <p>Google Apps Script で動かします。5分おきに新着を確認し、条件に合うメールだけを処理します。Googleアカウントの中で完結するため、外部サービスに情報を渡しません。</p>
+    </div>
+
+<pre class="code"><code><span class="c">/** 5分おきに実行。未処理の問い合わせメールを台帳へ追記する */</span>
+<span class="k">function</span> collectInquiries() {
+  <span class="k">const</span> label   = GmailApp.getUserLabelByName(<span class="s">'処理済み'</span>) || GmailApp.createLabel(<span class="s">'処理済み'</span>);
+  <span class="k">const</span> sheet   = SpreadsheetApp.getActive().getSheetByName(<span class="s">'問い合わせ台帳'</span>);
+  <span class="k">const</span> pending = SpreadsheetApp.getActive().getSheetByName(<span class="s">'要確認'</span>);
+
+  <span class="c">// 処理済みラベルが付いていないものだけを対象にする（二重登録の防止）</span>
+  <span class="k">const</span> threads = GmailApp.search(<span class="s">'label:inbox -label:処理済み subject:(お問い合わせ OR 予約)'</span>, <span class="s">0</span>, <span class="s">30</span>);
+
+  threads.forEach(<span class="k">function</span> (thread) {
+    thread.getMessages().forEach(<span class="k">function</span> (msg) {
+      <span class="k">const</span> parsed = parse(msg.getPlainBody(), msg.getFrom());
+
+      <span class="k">if</span> (parsed.missing.length) {
+        <span class="c">// 読み取れなかった項目がある → 台帳には入れず、人が見る場所へ</span>
+        pending.appendRow([msg.getDate(), msg.getFrom(),
+                           parsed.missing.join(<span class="s">'／'</span>), msg.getPlainBody().slice(0, 300)]);
+      } <span class="k">else</span> {
+        sheet.appendRow([msg.getDate(), parsed.name, parsed.contact, parsed.topic,
+                         parsed.date, parsed.summary, <span class="s">'未対応'</span>, msg.getId()]);
+      }
+    });
+    thread.addLabel(label);
+  });
+}
+
+<span class="c">/** 本文から必要な項目だけを抜き出す。拾えなければ missing に積む */</span>
+<span class="k">function</span> parse(body, from) {
+  <span class="k">const</span> mail  = (body.match(<span class="s">/[\w.+-]+@[\w-]+\.[\w.-]+/</span>) || [])[0];
+  <span class="k">const</span> tel   = (body.match(<span class="s">/0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4}/</span>) || [])[0];
+  <span class="k">const</span> name  = (body.match(<span class="s">/(?:お名前|氏名)[\s:：]*(.+)/</span>) || [])[1];
+  <span class="k">const</span> date  = (body.match(<span class="s">/(\d{1,2})\s*月\s*(\d{1,2})\s*日/</span>) || [])[0];
+  <span class="k">const</span> topic = classify(body);
+
+  <span class="k">const</span> missing = [];
+  <span class="k">if</span> (!mail && !tel) missing.push(<span class="s">'連絡先'</span>);
+  <span class="k">if</span> (!name)         missing.push(<span class="s">'お名前'</span>);
+  <span class="k">if</span> (!topic)        missing.push(<span class="s">'ご用件'</span>);
+
+  <span class="k">return</span> { name: name, contact: tel || mail, topic: topic,
+           date: date || <span class="s">'指定なし'</span>, summary: summarize(body), missing: missing };
+}</code></pre>
+
+    <p style="font-size:.8125rem;color:var(--muted);margin-top:.9rem">※ classify（用件の判定）と summarize（要約）は、お店ごとに内容が変わるため省略しています。上のデモでは、この2つを含む同じ処理をブラウザ上で再現しています。</p>
+  </div>
+</section>
+
+<!-- ===================== 応用 ===================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">SCOPE</p>
+      <h2>同じ形で作れるもの</h2>
+      <p>「決まった形で届くものを、決まった場所へ移す」作業は、だいたい同じ仕組みで自動化できます。</p>
+    </div>
+    <ul class="grid2">
+      <li><h3>予約サイトからの通知を台帳へ</h3><p>複数の予約サイトから届く通知を、1枚のシートにまとめます。媒体ごとに書式が違っても、それぞれに合わせて読み取ります。</p></li>
+      <li><h3>請求書メールを経理シートへ</h3><p>件名と本文から取引先・金額・支払期日を拾い、支払管理表に追記します。期日が近い行に色を付けることもできます。</p></li>
+      <li><h3>フォーム回答を顧客台帳へ</h3><p>同じ方からの複数回の問い合わせを1行にまとめ、履歴として残します。</p></li>
+      <li><h3>日報・報告メールの集計</h3><p>毎日届く定型の報告から数字だけを抜き出し、月次の集計表を自動で作ります。</p></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== 注記 ===================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="disclosure">
+      <h3>このページについて</h3>
+      <p>上のデモは<b>お使いのブラウザの中だけで動いています。</b>メールを読み取ったり、どこかへ送信したりはしていません。入力した内容は保存されず、ページを閉じると消えます。</p>
+      <p>掲載しているコードは、実際に <b>Google Apps Script</b> で動かしている仕組みの中心部分です。Googleアカウントの中で完結するため、外部のサービスにメールの内容を渡さずに運用できます。</p>
+      <p>デモに出てくる会社名・氏名・連絡先は、すべて架空のものです。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <a href="https://tahara-asuka.github.io/rakulabo/">ラクラボ トップ</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/chatbot/">AIチャットボット</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/lueur/">喫茶店のブランドサイト</a>
+    </div>
+    <small>制作：ラクラボ（田原 明日翔）</small>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- メールの例 ---------- */
+  var SAMPLES = [
+    { label:"予約の依頼", from:"tanaka.m@example.co.jp",
+      body:
+"件名：ご予約のお問い合わせ\n\n"+
+"はじめまして。\n"+
+"ホームページを拝見してご連絡いたしました。\n\n"+
+"お名前：田中 美咲\n"+
+"電話番号：090-1234-5678\n"+
+"メール：tanaka.m@example.co.jp\n\n"+
+"9月14日の午後に予約を取りたいのですが、空いていますでしょうか。\n"+
+"デスクワークが続いていて、右の肩から首にかけて痛みがあります。\n"+
+"よろしくお願いいたします。" },
+
+    { label:"料金の質問", from:"k_saito@example.ne.jp",
+      body:
+"件名：お問い合わせ（料金について）\n\n"+
+"お世話になります。\n\n"+
+"お名前：斉藤 健一\n"+
+"連絡先：080-9876-5432\n\n"+
+"初回の費用がいくらになるか教えていただけますか。\n"+
+"回数券があると伺ったのですが、有効期限はありますか。\n"+
+"予約はまだ決めていません。" },
+
+    { label:"日程の変更", from:"h.morita@example.com",
+      body:
+"件名：予約の変更のお願い\n\n"+
+"先日予約した森田です。\n\n"+
+"氏名：森田 陽菜\n"+
+"メール：h.morita@example.com\n\n"+
+"9月10日で予約していましたが、都合がつかなくなりました。\n"+
+"9月17日に変更していただくことは可能でしょうか。\n"+
+"お手数をおかけしますが、よろしくお願いします。" },
+
+    { label:"情報が足りない例", from:"noreply@example.org",
+      body:
+"件名：お問い合わせ\n\n"+
+"こんにちは。\n"+
+"ちょっと聞きたいことがあるのですが、今って空いてますか。\n"+
+"よろしくお願いします。" }
+  ];
+
+  /* ---------- 判定ルール（実運用ではお店ごとに書き換える部分） ---------- */
+  var TOPICS = [
+    { key:"予約", words:["予約","空いて","取りたい","来院したい","申し込み"] },
+    { key:"予約の変更", words:["変更","日程を","ずらし","キャンセル","都合がつかなく"] },
+    { key:"料金の質問", words:["料金","費用","いくら","価格","回数券","支払"] },
+    { key:"症状の相談", words:["痛み","痛い","こり","しびれ","つらい","不調"] },
+    { key:"その他の質問", words:["教えて","ですか","でしょうか","伺い"] }
+  ];
+
+  function classify(body){
+    var best=null, bestScore=0;
+    /* 「予約の変更」は「予約」より強く判定したいので、語の長さで重みをつける */
+    TOPICS.forEach(function(t){
+      var score=0;
+      t.words.forEach(function(w){ if (body.indexOf(w) > -1) score += w.length; });
+      if (score > bestScore) { bestScore=score; best=t.key; }
+    });
+    return best;
+  }
+
+  function summarize(body){
+    var lines = body.split("\n").map(function(s){ return s.trim(); })
+      .filter(function(s){
+        return s
+          && s.indexOf("件名") !== 0
+          && !/^(お名前|氏名|電話番号|連絡先|メール)[\s:：]/.test(s)
+          && !/^(はじめまして|お世話になります|こんにちは|よろしく|お手数)/.test(s);
+      });
+    var t = lines.join(" ");
+    return t.length > 46 ? t.slice(0,46) + "…" : (t || "—");
+  }
+
+  function parse(body, from){
+    var mail = (body.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [])[0] || "";
+    var tel  = (body.match(/0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4}/) || [])[0] || "";
+    var nm   = (body.match(/(?:お名前|氏名)[\s:：]*(.+)/) || [])[1];
+    var dt   = (body.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*日/g) || []);
+    var topic= classify(body);
+
+    var missing = [];
+    if (!mail && !tel) missing.push("連絡先");
+    if (!nm)           missing.push("お名前");
+    if (!topic)        missing.push("ご用件");
+
+    /* 日付が2つ出てきたら、後ろのほうを希望日として扱う（変更依頼の想定） */
+    var wish = dt.length ? dt[dt.length-1] : "指定なし";
+
+    return {
+      name: nm ? nm.trim() : "",
+      contact: tel || mail,
+      topic: topic || "",
+      date: wish,
+      summary: summarize(body),
+      missing: missing
+    };
+  }
+
+  /* ---------- 画面 ---------- */
+  var picker  = document.getElementById('picker');
+  var mail    = document.getElementById('mail');
+  var rows    = document.getElementById('rows');
+  var rowsNg  = document.getElementById('rowsNg');
+  var emptyOk = document.getElementById('emptyOk');
+  var emptyNg = document.getElementById('emptyNg');
+  var log     = document.getElementById('log');
+  var hint    = document.getElementById('hint');
+  var ngCount = document.getElementById('ngCount');
+  var current = 0, ngTotal = 0, okTotal = 0;
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function stamp(){
+    var d = new Date();
+    var p = function(n){ return ('0'+n).slice(-2); };
+    return (d.getMonth()+1)+'/'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes());
+  }
+
+  function drawPicker(){
+    SAMPLES.forEach(function(s, i){
+      var b = document.createElement('button');
+      b.type='button'; b.textContent = s.label;
+      b.setAttribute('aria-pressed', i===0 ? 'true' : 'false');
+      b.addEventListener('click', function(){
+        current = i;
+        mail.value = s.body;
+        [].forEach.call(picker.children, function(x, j){ x.setAttribute('aria-pressed', j===i ? 'true':'false'); });
+        hint.textContent = i===3 ? 'このメールは、お名前と連絡先が書かれていません。' : '';
+      });
+      picker.appendChild(b);
+    });
+    mail.value = SAMPLES[0].body;
+  }
+
+  function addOk(p){
+    emptyOk.hidden = true;
+    var tr = document.createElement('tr');
+    tr.className = 'fresh';
+    tr.innerHTML =
+      '<td>'+esc(stamp())+'</td>'+
+      '<td>'+esc(p.name)+'</td>'+
+      '<td>'+esc(p.contact)+'</td>'+
+      '<td>'+esc(p.topic)+'</td>'+
+      '<td>'+esc(p.date)+'</td>'+
+      '<td>'+esc(p.summary)+'</td>'+
+      '<td>未対応</td>';
+    rows.appendChild(tr);
+    okTotal++;
+    setTimeout(function(){ tr.classList.remove('fresh'); }, 1500);
+  }
+
+  function addNg(p, from, body){
+    emptyNg.hidden = true;
+    var tr = document.createElement('tr');
+    tr.className = 'fresh';
+    tr.innerHTML =
+      '<td>'+esc(stamp())+'</td>'+
+      '<td>'+esc(from)+'</td>'+
+      '<td>'+esc(p.missing.join('／'))+'</td>'+
+      '<td>'+esc(body.replace(/\n/g,' ').slice(0,60))+'…</td>';
+    rowsNg.appendChild(tr);
+    ngTotal++;
+    ngCount.hidden = false;
+    ngCount.textContent = ngTotal;
+    setTimeout(function(){ tr.classList.remove('fresh'); }, 1500);
+  }
+
+  document.getElementById('run').addEventListener('click', function(){
+    var body = mail.value;
+    var from = SAMPLES[current] ? SAMPLES[current].from : 'unknown@example.com';
+    log.textContent = '受信を確認しています…';
+
+    setTimeout(function(){
+      var p = parse(body, from);
+      if (p.missing.length){
+        addNg(p, from, body);
+        log.textContent = '読み取れない項目がありました（'+p.missing.join('／')+'）→ 「要確認」へ振り分けました';
+        showTab('ng');
+      } else {
+        addOk(p);
+        log.textContent = '台帳に1行追記しました（用件：'+p.topic+'）／ 累計 '+okTotal+' 件';
+        showTab('ok');
+      }
+    }, 520);
+  });
+
+  document.getElementById('clear').addEventListener('click', function(){
+    rows.innerHTML=''; rowsNg.innerHTML='';
+    okTotal=0; ngTotal=0;
+    emptyOk.hidden=false; emptyNg.hidden=false;
+    ngCount.hidden=true;
+    log.textContent = '台帳を空にしました';
+    showTab('ok');
+  });
+
+  function showTab(which){
+    var ok = which === 'ok';
+    document.getElementById('tab-ok').setAttribute('aria-selected', ok?'true':'false');
+    document.getElementById('tab-ng').setAttribute('aria-selected', ok?'false':'true');
+    document.getElementById('pane-ok').hidden = !ok;
+    document.getElementById('pane-ng').hidden = ok;
+  }
+  document.getElementById('tab-ok').addEventListener('click', function(){ showTab('ok'); });
+  document.getElementById('tab-ng').addEventListener('click', function(){ showTab('ng'); });
+
+  drawPicker();
+})();
+</script>
+
+</body>
+</html>
