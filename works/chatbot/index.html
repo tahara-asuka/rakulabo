@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>予約・問い合わせを自動で受けるAIチャットボット（デモ）｜ラクラボ</title>
+<meta name="description" content="整体院を例に、予約受付・料金案内・よくある質問への応答を自動化したチャットボットのデモです。実際に話しかけて動作をご確認いただけます。制作：ラクラボ（田原明日翔）">
+<meta property="og:type" content="website">
+<meta property="og:title" content="予約・問い合わせを自動で受けるAIチャットボット（デモ）">
+<meta property="og:description" content="整体院を例に、予約受付と問い合わせ対応を自動化したチャットボット。実際に触って動作を確認できます。">
+<meta name="theme-color" content="#F7F5F1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@500;600&display=swap">
+
+<style>
+/* ============================================================
+   トークン
+   ============================================================ */
+:root{
+  --ground:      #F7F5F1;
+  --surface:     #FFFFFF;
+  --surface-alt: #EFEBE4;
+  --ink:         #23302E;
+  --ink-soft:    #55625F;
+  --muted:       #8A9391;
+  --line:        #E1DCD3;
+  --line-strong: #CDC6BA;
+
+  --accent:      #2F6F62;   /* 深い緑 — 治療院の落ち着き */
+  --accent-deep: #23574C;
+  --accent-soft: #DCE8E4;
+  --warn:        #B4703A;
+
+  --bubble-bot:  #FFFFFF;
+  --bubble-me:   #2F6F62;
+  --bubble-me-tx:#FFFFFF;
+
+  --font-body:   "Zen Kaku Gothic New", -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --font-head:   "Zen Old Mincho", "Hiragino Mincho ProN", serif;
+
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(35,48,46,.05), 0 8px 28px rgba(35,48,46,.07);
+  --wrap: 1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:      #141A19;
+    --surface:     #1B2321;
+    --surface-alt: #212B29;
+    --ink:         #E6E9E7;
+    --ink-soft:    #AFBAB7;
+    --muted:       #7E8987;
+    --line:        #2A3533;
+    --line-strong: #3A4744;
+    --accent:      #5FA795;
+    --accent-deep: #7CC0AE;
+    --accent-soft: #22322E;
+    --bubble-bot:  #212B29;
+    --bubble-me:   #3C7F70;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+  --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+  --line:#2A3533; --line-strong:#3A4744;
+  --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+  --bubble-bot:#212B29; --bubble-me:#3C7F70;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.35);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-body); font-size:15px; line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+}
+img{ max-width:100%; }
+a{ color:inherit; }
+
+.wrap{ width:min(100% - 2.5rem, var(--wrap)); margin-inline:auto; }
+
+/* ============================================================
+   ヘッダー
+   ============================================================ */
+.site-head{
+  border-bottom:1px solid var(--line);
+  background:color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter:saturate(1.2) blur(8px);
+  position:sticky; top:0; z-index:20;
+}
+.site-head .wrap{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem; padding:.9rem 0;
+}
+.brand{ display:flex; align-items:baseline; gap:.6rem; text-decoration:none; }
+.brand b{ font-family:var(--font-head); font-size:1.05rem; letter-spacing:.14em; font-weight:600; }
+.brand span{ font-size:.6875rem; letter-spacing:.22em; color:var(--muted); }
+.head-link{
+  font-size:.8125rem; letter-spacing:.04em; color:var(--ink-soft);
+  text-decoration:none; border-bottom:1px solid var(--line-strong);
+  padding-bottom:2px; white-space:nowrap;
+}
+.head-link:hover{ color:var(--ink); border-color:var(--accent); }
+
+/* ============================================================
+   ヒーロー
+   ============================================================ */
+.hero{ padding:clamp(3rem,7vw,5.5rem) 0 clamp(2rem,4vw,3rem); }
+.eyebrow{
+  font-size:.75rem; letter-spacing:.2em; color:var(--accent);
+  margin:0 0 1rem; font-weight:700;
+}
+.hero h1{
+  font-family:var(--font-head); font-weight:600;
+  font-size:clamp(1.6rem,4.2vw,2.5rem); line-height:1.6; letter-spacing:.03em;
+  margin:0 0 1.1rem; text-wrap:balance;
+}
+.hero p{ margin:0; max-width:34em; color:var(--ink-soft); }
+.hero .note{
+  margin-top:1.4rem; font-size:.8125rem; color:var(--muted);
+  border-left:2px solid var(--line-strong); padding-left:.9rem;
+}
+
+/* ============================================================
+   デモ本体：説明 + チャット
+   ============================================================ */
+.demo{
+  display:grid; gap:clamp(1.75rem,4vw,3rem);
+  grid-template-columns:1fr;
+  padding-bottom:clamp(3rem,6vw,4.5rem);
+}
+@media (min-width:900px){
+  .demo{ grid-template-columns: 1fr minmax(360px, 400px); align-items:start; }
+}
+
+.panel h2{
+  font-family:var(--font-head); font-weight:600;
+  font-size:1.125rem; letter-spacing:.05em; margin:0 0 1rem;
+}
+.panel h2 + p{ margin-top:0; }
+.panel p{ color:var(--ink-soft); }
+
+.tryset{
+  display:flex; flex-wrap:wrap; gap:.5rem; margin:1.1rem 0 0; padding:0; list-style:none;
+}
+.tryset button{
+  font-family:inherit; font-size:.8125rem; line-height:1.5;
+  padding:.5rem .85rem; border-radius:999px; cursor:pointer;
+  background:var(--surface); color:var(--ink);
+  border:1px solid var(--line-strong); transition:.18s;
+}
+.tryset button:hover{ border-color:var(--accent); color:var(--accent-deep); }
+.tryset button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+.facts{
+  margin:2.25rem 0 0; padding:0; list-style:none;
+  display:grid; gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+}
+@media (min-width:560px){ .facts{ grid-template-columns:repeat(3,1fr); } }
+.facts li{ background:var(--surface); padding:1.1rem 1.2rem; }
+.facts b{
+  display:block; font-family:var(--font-head); font-size:1.35rem;
+  letter-spacing:.02em; color:var(--accent-deep); margin-bottom:.15rem;
+}
+.facts span{ font-size:.8125rem; color:var(--ink-soft); line-height:1.7; display:block; }
+
+/* --- チャットウィジェット --- */
+.device{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:20px; box-shadow:var(--shadow); overflow:hidden;
+  display:flex; flex-direction:column; height:min(74vh, 620px);
+  position:sticky; top:5rem;
+}
+@media (max-width:899px){ .device{ position:static; height:560px; } }
+
+.dev-head{
+  display:flex; align-items:center; gap:.7rem;
+  padding:.85rem 1rem; background:var(--accent); color:#fff;
+}
+.dev-avatar{
+  width:34px; height:34px; border-radius:50%; flex:none;
+  background:rgba(255,255,255,.18); display:grid; place-items:center;
+}
+.dev-avatar svg{ width:19px; height:19px; }
+.dev-title{ font-size:.875rem; font-weight:700; letter-spacing:.03em; line-height:1.3; }
+.dev-sub{ font-size:.6875rem; opacity:.85; letter-spacing:.04em; }
+.dev-status{ margin-left:auto; font-size:.625rem; letter-spacing:.1em; opacity:.9; display:flex; align-items:center; gap:.35rem; }
+.dev-status i{ width:7px; height:7px; border-radius:50%; background:#8FE3C6; display:block; }
+
+.log{
+  flex:1; overflow-y:auto; padding:1.1rem 1rem 1.4rem;
+  background:var(--surface-alt); display:flex; flex-direction:column; gap:.7rem;
+  scroll-behavior:smooth;
+}
+.msg{ display:flex; gap:.55rem; align-items:flex-end; max-width:88%; }
+.msg.me{ align-self:flex-end; flex-direction:row-reverse; }
+.msg .ic{
+  width:26px; height:26px; border-radius:50%; flex:none;
+  background:var(--accent); display:grid; place-items:center;
+}
+.msg .ic svg{ width:15px; height:15px; }
+.msg.me .ic{ display:none; }
+.bub{
+  background:var(--bubble-bot); color:var(--ink);
+  padding:.7rem .9rem; border-radius:var(--radius);
+  font-size:.875rem; line-height:1.85; white-space:pre-wrap;
+  border:1px solid var(--line); word-break:break-word;
+}
+.msg.me .bub{
+  background:var(--bubble-me); color:var(--bubble-me-tx); border-color:transparent;
+}
+.bub .lead{ font-weight:700; }
+.bub .small{ font-size:.8125rem; color:var(--muted); display:block; margin-top:.4rem; }
+.msg.me .bub .small{ color:rgba(255,255,255,.75); }
+
+.chips{ display:flex; flex-wrap:wrap; gap:.4rem; padding:0 1rem .9rem; background:var(--surface-alt); }
+.chips button{
+  font-family:inherit; font-size:.75rem; padding:.4rem .75rem;
+  border-radius:999px; cursor:pointer; background:var(--surface);
+  color:var(--accent-deep); border:1px solid var(--accent);
+  transition:.15s;
+}
+.chips button:hover{ background:var(--accent-soft); }
+.chips button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+.typing{ display:flex; gap:4px; padding:.85rem .95rem; }
+.typing i{
+  width:6px; height:6px; border-radius:50%; background:var(--muted); display:block;
+  animation:blip 1.1s infinite ease-in-out;
+}
+.typing i:nth-child(2){ animation-delay:.16s; }
+.typing i:nth-child(3){ animation-delay:.32s; }
+@keyframes blip{ 0%,60%,100%{ opacity:.28; transform:translateY(0); } 30%{ opacity:1; transform:translateY(-3px); } }
+@media (prefers-reduced-motion: reduce){ .typing i{ animation:none; opacity:.5; } .log{ scroll-behavior:auto; } }
+
+.compose{
+  display:flex; gap:.5rem; padding:.7rem .8rem;
+  border-top:1px solid var(--line); background:var(--surface);
+}
+.compose input{
+  flex:1; min-width:0; font-family:inherit; font-size:.875rem;
+  padding:.6rem .85rem; border-radius:999px;
+  border:1px solid var(--line-strong); background:var(--ground); color:var(--ink);
+}
+.compose input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+.compose button{
+  flex:none; width:40px; height:40px; border-radius:50%; cursor:pointer;
+  border:0; background:var(--accent); color:#fff; display:grid; place-items:center;
+}
+.compose button:hover{ background:var(--accent-deep); }
+.compose button:focus-visible{ outline:2px solid var(--accent-deep); outline-offset:2px; }
+.compose svg{ width:17px; height:17px; }
+
+/* ============================================================
+   セクション共通
+   ============================================================ */
+.sec{ padding:clamp(3rem,6vw,4.75rem) 0; border-top:1px solid var(--line); }
+.sec-head{ margin-bottom:clamp(1.75rem,3.5vw,2.5rem); }
+.sec-head h2{
+  font-family:var(--font-head); font-weight:600;
+  font-size:clamp(1.3rem,3vw,1.7rem); letter-spacing:.04em; margin:.5rem 0 .6rem;
+}
+.sec-head p{ margin:0; color:var(--ink-soft); max-width:40em; }
+
+/* 仕組みの図 */
+.flow{ width:100%; height:auto; display:block; }
+.fl-box{ fill:var(--surface); stroke:var(--line-strong); }
+.fl-box-a{ fill:var(--accent-soft); stroke:var(--accent); }
+.fl-tx{ fill:var(--ink); font-family:var(--font-body); font-size:13px; }
+.fl-tx-s{ fill:var(--ink-soft); font-family:var(--font-body); font-size:11px; }
+.fl-line{ stroke:var(--line-strong); stroke-width:1.4; fill:none; }
+.fl-arrow{ fill:var(--line-strong); }
+
+/* できることリスト */
+.cando{ list-style:none; margin:0; padding:0; display:grid; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+@media (min-width:720px){ .cando{ grid-template-columns:repeat(2,1fr); } }
+.cando li{ background:var(--surface); padding:1.15rem 1.25rem; }
+.cando h3{ margin:0 0 .35rem; font-size:.9375rem; font-weight:700; letter-spacing:.02em; }
+.cando p{ margin:0; font-size:.8125rem; color:var(--ink-soft); line-height:1.85; }
+
+/* 料金 */
+.price{ list-style:none; margin:0; padding:0; display:grid; gap:1rem; }
+@media (min-width:720px){ .price{ grid-template-columns:repeat(3,1fr); } }
+.price li{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--radius); padding:1.4rem 1.3rem;
+}
+.price .lbl{ font-size:.6875rem; letter-spacing:.16em; color:var(--accent); font-weight:700; }
+.price h3{ font-family:var(--font-head); font-size:1.05rem; margin:.55rem 0 .5rem; font-weight:600; }
+.price .amt{ font-family:var(--font-head); font-size:1.5rem; color:var(--ink); margin:0 0 .7rem; letter-spacing:.01em; }
+.price .amt small{ font-size:.75rem; color:var(--muted); font-family:var(--font-body); margin-left:.2rem; }
+.price ul{ margin:0; padding-left:1.15em; font-size:.8125rem; color:var(--ink-soft); line-height:1.95; }
+
+/* 注記 */
+.disclosure{
+  background:var(--surface); border:1px solid var(--line-strong);
+  border-radius:var(--radius); padding:1.3rem 1.4rem;
+}
+.disclosure h3{ margin:0 0 .6rem; font-size:.9375rem; font-weight:700; }
+.disclosure p{ margin:0 0 .6rem; font-size:.8125rem; color:var(--ink-soft); line-height:1.9; }
+.disclosure p:last-child{ margin-bottom:0; }
+
+/* フッター */
+.site-foot{ border-top:1px solid var(--line); padding:2.25rem 0 3rem; }
+.site-foot .wrap{ display:flex; flex-wrap:wrap; gap:1rem 1.75rem; align-items:center; justify-content:space-between; }
+.site-foot a{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none; border-bottom:1px solid var(--line-strong); }
+.site-foot a:hover{ color:var(--ink); border-color:var(--accent); }
+.site-foot small{ font-size:.75rem; color:var(--muted); }
+
+.sr{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+</style>
+</head>
+
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="https://tahara-asuka.github.io/rakulabo/">
+      <b>ラクラボ</b><span>RAKU LABO</span>
+    </a>
+    <a class="head-link" href="https://tahara-asuka.github.io/rakulabo/">ラクラボのサイトへ →</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CHATBOT DEMO</p>
+    <h1>電話に出られない時間の<br>問い合わせを、取りこぼさない。</h1>
+    <p>整体院を例に、<b>予約の受付・料金の案内・よくある質問への応答</b>を自動化したチャットボットです。右のウィンドウに、実際に話しかけてみてください。営業時間や料金を聞いても、そのまま「予約したい」と言っても構いません。</p>
+    <p class="note">このページは制作サンプルです。「なごみ整体院」は実在しません。</p>
+  </div>
+</section>
+
+<div class="wrap demo">
+
+  <div class="panel">
+    <h2>何を自動で受けているか</h2>
+    <p>店舗の問い合わせは、内容がほとんど決まっています。営業時間、料金、駐車場、初回の流れ、予約。これらは人が毎回答える必要がありません。手が離せない時間帯の取りこぼしを、まず無くすことが目的です。</p>
+
+    <ul class="tryset" id="tryset">
+      <li><button type="button" data-q="営業時間を教えてください">営業時間は？</button></li>
+      <li><button type="button" data-q="料金はいくらですか">料金はいくら？</button></li>
+      <li><button type="button" data-q="駐車場はありますか">駐車場ある？</button></li>
+      <li><button type="button" data-q="初回はどんな流れですか">初回の流れは？</button></li>
+      <li><button type="button" data-q="腰痛がひどいのですが診てもらえますか">腰が痛い</button></li>
+      <li><button type="button" data-q="予約したいです">予約したい</button></li>
+    </ul>
+
+    <ul class="facts">
+      <li><b>24時間</b><span>受付。閉院後や施術中の問い合わせも取りこぼしません。</span></li>
+      <li><b>9割</b><span>店舗への問い合わせの多くは、営業時間・料金・予約の3つに集中します。</span></li>
+      <li><b>0秒</b><span>返答までの待ち時間。折り返しの電話が不要になります。</span></li>
+    </ul>
+
+    <h2 style="margin-top:2.5rem">答えられないときは、無理に答えません</h2>
+    <p>症状の判断や、料金の例外的な相談など、機械が答えるべきでない質問があります。このボットは分からないことを分からないと言い、電話とフォームに誘導して会話を終えます。<b>間違った回答を返すことのほうが、お店にとって損失が大きい</b>と考えているためです。実際に「保険は使えますか」と聞いてみてください。</p>
+  </div>
+
+  <!-- チャットウィジェット -->
+  <div class="device" role="region" aria-label="チャットボットのデモ">
+    <div class="dev-head">
+      <div class="dev-avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="7" width="17" height="12" rx="3"/><path d="M12 7V4"/><circle cx="12" cy="3" r="1.2" fill="#fff" stroke="none"/>
+          <circle cx="9" cy="13" r="1.1" fill="#fff" stroke="none"/><circle cx="15" cy="13" r="1.1" fill="#fff" stroke="none"/>
+        </svg>
+      </div>
+      <div>
+        <div class="dev-title">なごみ整体院</div>
+        <div class="dev-sub">ご予約・お問い合わせ窓口</div>
+      </div>
+      <div class="dev-status"><i></i>応答中</div>
+    </div>
+
+    <div class="log" id="log" aria-live="polite" aria-atomic="false"></div>
+    <div class="chips" id="chips"></div>
+
+    <form class="compose" id="compose" autocomplete="off">
+      <label class="sr" for="input">メッセージを入力</label>
+      <input id="input" type="text" placeholder="メッセージを入力…" maxlength="120">
+      <button type="submit" aria-label="送信">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12h15M13 6l6 6-6 6"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<!-- ============ 仕組み ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">HOW IT WORKS</p>
+      <h2>この会話の裏側</h2>
+      <p>入力された文章から「何を聞きたいのか」を判定し、お店の情報をまとめたナレッジから答えを返しています。判定できなかったときは、無理に答えず人へ渡します。</p>
+    </div>
+
+    <svg class="flow" viewBox="0 0 900 250" role="img" aria-label="お客様の質問を意図判定し、ナレッジから回答するか、判定できない場合は人へ引き継ぐ流れの図">
+      <!-- 1 -->
+      <rect class="fl-box" x="8" y="88" width="150" height="62" rx="10"/>
+      <text class="fl-tx" x="83" y="114" text-anchor="middle">お客様の質問</text>
+      <text class="fl-tx-s" x="83" y="133" text-anchor="middle">「駐車場ある？」</text>
+      <!-- arrow -->
+      <path class="fl-line" d="M162 119 H206"/>
+      <path class="fl-arrow" d="M206 119 l-7 -4.5 v9 z"/>
+      <!-- 2 -->
+      <rect class="fl-box-a" x="212" y="82" width="164" height="74" rx="10"/>
+      <text class="fl-tx" x="294" y="108" text-anchor="middle">意図の判定</text>
+      <text class="fl-tx-s" x="294" y="127" text-anchor="middle">言い換え・表記ゆれを</text>
+      <text class="fl-tx-s" x="294" y="143" text-anchor="middle">まとめて1つの意図へ</text>
+      <!-- arrow -->
+      <path class="fl-line" d="M380 119 H424"/>
+      <path class="fl-arrow" d="M424 119 l-7 -4.5 v9 z"/>
+      <!-- 3 -->
+      <rect class="fl-box" x="430" y="82" width="164" height="74" rx="10"/>
+      <text class="fl-tx" x="512" y="108" text-anchor="middle">ナレッジを参照</text>
+      <text class="fl-tx-s" x="512" y="127" text-anchor="middle">営業時間・料金・設備</text>
+      <text class="fl-tx-s" x="512" y="143" text-anchor="middle">初回の流れ・注意事項</text>
+      <!-- split -->
+      <path class="fl-line" d="M598 119 H636 V54 H688"/>
+      <path class="fl-arrow" d="M688 54 l-7 -4.5 v9 z"/>
+      <path class="fl-line" d="M636 119 V186 H688"/>
+      <path class="fl-arrow" d="M688 186 l-7 -4.5 v9 z"/>
+      <!-- 4a -->
+      <rect class="fl-box-a" x="694" y="24" width="198" height="62" rx="10"/>
+      <text class="fl-tx" x="793" y="50" text-anchor="middle">その場で回答</text>
+      <text class="fl-tx-s" x="793" y="69" text-anchor="middle">予約はそのまま受付へ</text>
+      <!-- 4b -->
+      <rect class="fl-box" x="694" y="156" width="198" height="62" rx="10"/>
+      <text class="fl-tx" x="793" y="182" text-anchor="middle">人へ引き継ぐ</text>
+      <text class="fl-tx-s" x="793" y="201" text-anchor="middle">電話・フォームへ案内</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ============ できること ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">SCOPE</p>
+      <h2>お引き受けできる範囲</h2>
+      <p>お店ごとに聞かれることは違います。実際のご依頼では、いただいた資料と過去の問い合わせをもとに、そのお店専用の受け答えを設計します。</p>
+    </div>
+    <ul class="cando">
+      <li>
+        <h3>受け答えの設計</h3>
+        <p>よくある質問の洗い出し、言い換えへの対応、答えてはいけないことの線引き。ここが品質の大半を決めます。</p>
+      </li>
+      <li>
+        <h3>予約の受付フロー</h3>
+        <p>希望日時・お名前・連絡先・ご相談内容を順に伺い、最後に内容を確認してから送信する形にします。</p>
+      </li>
+      <li>
+        <h3>既存サイトへの設置</h3>
+        <p>今あるホームページに、タグを1行足すだけで設置できます。サイトを作り直す必要はありません。</p>
+      </li>
+      <li>
+        <h3>問い合わせ内容の記録</h3>
+        <p>受けた予約や質問を、スプレッドシートやメールへ自動で残します。あとから見返せる形にします。</p>
+      </li>
+      <li>
+        <h3>公開後の調整</h3>
+        <p>実際に使い始めると、想定していなかった聞かれ方が必ず出ます。1か月は無償で調整します。</p>
+      </li>
+      <li>
+        <h3>ホームページとセットの制作</h3>
+        <p>サイト自体からご依頼いただくこともできます。チャットボットを前提に導線を設計します。</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 料金 ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">PRICE</p>
+      <h2>料金の目安</h2>
+      <p>いずれも目安です。聞かれることの数と、予約フローの複雑さで変わります。正式なお見積りは、お店の状況を伺ったうえでお出しします。</p>
+    </div>
+    <ul class="price">
+      <li>
+        <span class="lbl">BASIC</span>
+        <h3>よくある質問のみ</h3>
+        <p class="amt">30,000円<small>〜</small></p>
+        <ul>
+          <li>質問と回答 20項目まで</li>
+          <li>既存サイトへの設置</li>
+          <li>公開後1か月の調整</li>
+        </ul>
+      </li>
+      <li>
+        <span class="lbl">STANDARD</span>
+        <h3>予約受付つき</h3>
+        <p class="amt">60,000円<small>〜</small></p>
+        <ul>
+          <li>質問と回答 40項目まで</li>
+          <li>予約フローの設計と実装</li>
+          <li>内容をスプレッドシートへ記録</li>
+          <li>公開後1か月の調整</li>
+        </ul>
+      </li>
+      <li>
+        <span class="lbl">WITH SITE</span>
+        <h3>サイト制作とセット</h3>
+        <p class="amt">120,000円<small>〜</small></p>
+        <ul>
+          <li>ホームページ制作（1ページ）</li>
+          <li>チャットボット標準搭載</li>
+          <li>スマートフォン対応</li>
+          <li>公開作業まで対応</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 正直な注記 ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="disclosure">
+      <h3>このデモについて（正直にお伝えします）</h3>
+      <p>このページのチャットボットは、<b>お使いのブラウザの中だけで動いています。</b>外部のサービスやAPIには接続していません。回答は、あらかじめ設計したナレッジ（お店の情報と受け答えの分岐）から返しています。無料で置き続けられ、いつでも同じ動きを確認していただけるようにするためです。</p>
+      <p>実際のご依頼では、<b>Dify や ChatGPT の API に接続</b>し、言い回しの揺れにより広く対応できる形で構築します。ただしその場合も、料金・営業時間・予約可否といった<b>間違えてはいけない情報は、生成に任せず固定の回答から返す</b>設計にします。お店の信用に関わる部分だからです。</p>
+      <p>「なごみ整体院」は制作サンプルのための架空の店舗で、住所・電話番号・料金はすべて架空のものです。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <a href="https://tahara-asuka.github.io/rakulabo/">ラクラボ トップ</a>
+      &nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/lueur/">喫茶店のブランドサイト</a>
+      &nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/#/contact">ご相談</a>
+    </div>
+    <small>制作：ラクラボ（田原 明日翔）</small>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     お店のナレッジ（実案件では、この部分をお店ごとに作ります）
+     ======================================================= */
+  var SHOP = {
+    name: "なごみ整体院",
+    hours: "平日 10:00〜20:00（最終受付 19:00）\n土曜 9:00〜18:00（最終受付 17:00）\n日曜・祝日は休診です",
+    access: "JR阿佐ケ谷駅 南口から徒歩4分\n杉並区阿佐谷南1-2-3 なごみビル2F",
+    tel: "03-1234-5678"
+  };
+
+  /* 意図の定義。key は正規化した質問文にマッチさせるキーワード群 */
+  var INTENTS = [
+    {
+      id:"hours",
+      words:["営業時間","何時","なんじ","開いて","あいて","やってる","やって","定休","休み","休診","日曜","土曜","祝日","何曜","閉ま"],
+      answer:"当院の受付時間です。\n\n"+SHOP.hours+"\n\n最終受付を過ぎてのご来院はお受けできませんので、お気をつけください。",
+      chips:["料金はいくら？","予約したい"]
+    },
+    {
+      id:"price",
+      words:["料金","値段","いくら","費用","価格","金額","支払","カード","現金","高い","安い","回数券"],
+      answer:"料金は次のとおりです。\n\n・初回　6,600円（検査＋施術 約60分）\n・2回目以降　5,500円（約45分）\n・回数券 6回　30,000円（1回あたり5,000円）\n\nお支払いは現金・クレジットカード・各種QR決済に対応しています。",
+      chips:["保険は使えますか","初回の流れは？","予約したい"]
+    },
+    {
+      id:"insurance",
+      escalate:true,
+      words:["保険","健康保険","保険証","適用","労災","交通事故","医療費"],
+      answer:"申し訳ありません。保険の適用は、症状や経緯によって扱いが変わります。ここでご案内して誤りがあるといけませんので、<b>スタッフからご説明させてください。</b>",
+      chips:["電話をかける","問い合わせフォーム"]
+    },
+    {
+      id:"first",
+      words:["初回","初めて","はじめて","流れ","どんなこと","何する","なにする","当日","持ち物","服装","着替え","時間はどれくらい","所要"],
+      answer:"初回は約60分いただいております。\n\n1. 問診（10分）　お困りの症状と経緯を伺います\n2. 検査（10分）　姿勢と可動域を確認します\n3. 施術（40分）\n4. セルフケアのご説明\n\n動きやすい服装でお越しください。お着替えは無料でお貸ししています。",
+      chips:["料金はいくら？","予約したい"]
+    },
+    {
+      id:"parking",
+      words:["駐車","駐車場","車","くるま","停め","とめ","バイク","自転車","駐輪"],
+      answer:"提携のコインパーキングを2台分ご用意しています。受付で30分の無料券をお渡ししますので、駐車券をお持ちください。\n\n自転車は院の前に停めていただけます。",
+      chips:["アクセスを教えて","予約したい"]
+    },
+    {
+      id:"access",
+      words:["場所","どこ","住所","アクセス","行き方","最寄","駅","地図","近く"],
+      answer:"所在地です。\n\n"+SHOP.access+"\n\n1階がパン屋さんのビルで、入口は建物の右手にあります。",
+      chips:["駐車場ある？","予約したい"]
+    },
+    {
+      id:"symptom",
+      words:["腰","肩こり","肩","首","膝","ひざ","頭痛","しびれ","痛い","痛み","つらい","辛い","産後","骨盤","猫背","姿勢","スポーツ","ぎっくり","坐骨"],
+      answer:"つらいですね。当院では、腰痛・肩こり・首の痛み・産後の骨盤ケア・スポーツによる痛みを多くお受けしています。\n\nただ、<b>症状の原因をこの場で判断することはいたしません。</b>初回に検査を行ったうえで、施術で改善が見込めるか、医療機関の受診をおすすめすべきかをお伝えします。",
+      chips:["初回の流れは？","予約したい"]
+    },
+    {
+      id:"cancel",
+      words:["キャンセル","変更","予約を変更","日程","遅れ","遅刻","当日"],
+      answer:"ご予約の変更・キャンセルは、前日までにご連絡いただければ無料です。当日のキャンセルは施術料の50%を頂戴しております。\n\n遅れそうな場合は、分かった時点でお電話ください（"+SHOP.tel+"）。施術時間を短縮して対応いたします。",
+      chips:["予約したい"]
+    },
+    {
+      id:"kids",
+      words:["子供","こども","子ども","キッズ","赤ちゃん","ベビー","子連れ","抱っこ"],
+      answer:"お子さま連れでご来院いただけます。受付の横に小さなキッズスペースがあり、施術中はスタッフが目の届く場所でお預かりします。\n\nベビーカーのまま院内に入っていただけます。",
+      chips:["予約したい","初回の流れは？"]
+    },
+    {
+      id:"thanks",
+      words:["ありがとう","ありがと","助かり","わかった","分かった","了解","なるほど","おけ","ok"],
+      answer:"お役に立てて何よりです。ほかにも気になることがあれば、いつでも聞いてください。",
+      chips:["予約したい"]
+    },
+    {
+      id:"hello",
+      words:["こんにちは","はじめまして","もしもし","おはよう","こんばんは","hello","hi"],
+      answer:"こんにちは。"+SHOP.name+"の受付です。ご予約でも、ちょっとした質問でも、お気軽にどうぞ。",
+      chips:["営業時間は？","料金はいくら？","予約したい"]
+    }
+  ];
+
+  var RESERVE_WORDS = ["予約","よやく","取りたい","とりたい","行きたい","いきたい","来院","予約したい","申し込み","申込"];
+  var HUMAN_WORDS = ["人と","スタッフ","担当","電話","でんわ","つなげ","繋げ","相談したい"];
+
+  /* =========================================================
+     画面
+     ======================================================= */
+  var log = document.getElementById('log');
+  var chips = document.getElementById('chips');
+  var form = document.getElementById('compose');
+  var input = document.getElementById('input');
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* <b> だけは通す（強調のため） */
+  function render(text){
+    return esc(text).replace(/&lt;b&gt;/g,'<b>').replace(/&lt;\/b&gt;/g,'</b>');
+  }
+
+  function bubble(text, who){
+    var wrap = document.createElement('div');
+    wrap.className = 'msg' + (who === 'me' ? ' me' : '');
+    if (who !== 'me') {
+      var ic = document.createElement('div');
+      ic.className = 'ic';
+      ic.setAttribute('aria-hidden','true');
+      ic.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="8" width="16" height="11" rx="3"/><circle cx="9.5" cy="13.5" r="1" fill="#fff" stroke="none"/><circle cx="14.5" cy="13.5" r="1" fill="#fff" stroke="none"/></svg>';
+      wrap.appendChild(ic);
+    }
+    var b = document.createElement('div');
+    b.className = 'bub';
+    b.innerHTML = render(text);
+    wrap.appendChild(b);
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+    return wrap;
+  }
+
+  function typing(){
+    var wrap = document.createElement('div');
+    wrap.className = 'msg';
+    wrap.innerHTML = '<div class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="8" width="16" height="11" rx="3"/><circle cx="9.5" cy="13.5" r="1" fill="#fff" stroke="none"/><circle cx="14.5" cy="13.5" r="1" fill="#fff" stroke="none"/></svg></div>'
+      + '<div class="bub" style="padding:0"><div class="typing"><i></i><i></i><i></i></div></div>';
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+    return wrap;
+  }
+
+  function setChips(list){
+    chips.innerHTML = '';
+    (list || []).forEach(function(label){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.addEventListener('click', function(){ send(label); });
+      chips.appendChild(b);
+    });
+  }
+
+  /* botの発話。少し間を置いてから出す */
+  function say(text, chipList, delay){
+    var t = typing();
+    setTimeout(function(){
+      t.remove();
+      bubble(text, 'bot');
+      setChips(chipList);
+    }, delay || (420 + Math.min(text.length * 7, 620)));
+  }
+
+  /* =========================================================
+     判定
+     ======================================================= */
+  function normalize(s){
+    return String(s)
+      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+      .toLowerCase().replace(/[\s　！!？?。、,.]/g,'');
+  }
+
+  function hit(text, words){
+    var n = normalize(text), score = 0;
+    words.forEach(function(w){ if (n.indexOf(normalize(w)) > -1) score += w.length; });
+    return score;
+  }
+
+  function detect(text){
+    if (hit(text, RESERVE_WORDS) > 0) return { id:'reserve' };
+    if (hit(text, HUMAN_WORDS) > 0)   return { id:'human' };
+    var best = null, bestScore = 0;
+    INTENTS.forEach(function(it){
+      var s = hit(text, it.words);
+      if (s > bestScore) { bestScore = s; best = it; }
+    });
+    return bestScore > 0 ? best : null;
+  }
+
+  /* =========================================================
+     予約フロー
+     ======================================================= */
+  var flow = null;
+
+  var STEPS = [
+    { key:'date',    ask:"ご予約ですね。ありがとうございます。\nご希望の日にちを教えてください。（例：9月10日、来週の土曜）", chips:["今週の土曜","来週の平日"] },
+    { key:'time',    ask:"ありがとうございます。\nご希望の時間帯はいかがなさいますか。", chips:["午前","午後","夕方以降"] },
+    { key:'symptom', ask:"承知しました。\n今いちばん気になっている症状を、ひとことで教えてください。", chips:["腰の痛み","肩こり","産後の骨盤"] },
+    { key:'name',    ask:"ありがとうございます。\nお名前をフルネームでお願いします。" },
+    { key:'tel',     ask:"最後に、当日つながるお電話番号をお願いします。" }
+  ];
+
+  function startReserve(){
+    flow = { step:0, data:{} };
+    say(STEPS[0].ask, STEPS[0].chips);
+  }
+
+  function advance(text){
+    var step = STEPS[flow.step];
+    flow.data[step.key] = text;
+    flow.step++;
+    if (flow.step < STEPS.length) {
+      var next = STEPS[flow.step];
+      say(next.ask, next.chips);
+    } else {
+      var d = flow.data;
+      flow = null;
+      say(
+        "内容をご確認ください。\n\n"
+        + "・ご希望日　" + d.date + "\n"
+        + "・時間帯　　" + d.time + "\n"
+        + "・ご症状　　" + d.symptom + "\n"
+        + "・お名前　　" + d.name + " 様\n"
+        + "・お電話　　" + d.tel + "\n\n"
+        + "この内容でお送りしてよろしいですか。",
+        ["この内容で送信","修正したい"]
+      );
+    }
+  }
+
+  /* =========================================================
+     応答
+     ======================================================= */
+  function respond(text){
+    /* 予約フローの途中 */
+    if (flow) {
+      if (normalize(text).indexOf('やめ') > -1 || normalize(text).indexOf('キャンセル') > -1) {
+        flow = null;
+        say("承知しました。予約の受付を中止しました。\nほかに気になることがあれば聞いてください。", ["営業時間は？","料金はいくら？"]);
+        return;
+      }
+      advance(text);
+      return;
+    }
+
+    var n = normalize(text);
+
+    if (n.indexOf('この内容で送信') > -1) {
+      say("ありがとうございました。ご予約の希望を受け付けました。\n\n<b>※ このデモでは実際の送信は行っていません。</b>実際の運用では、この内容がそのままお店のメールとスプレッドシートに届きます。\n\n折り返し、担当者から確定のご連絡を差し上げる流れになります。", ["最初に戻る"]);
+      return;
+    }
+    if (n.indexOf('修正したい') > -1) {
+      say("承知しました。もう一度うかがいます。", null, 350);
+      setTimeout(startReserve, 900);
+      return;
+    }
+    if (n.indexOf('最初に戻る') > -1) { greet(true); return; }
+    if (n.indexOf('電話をかける') > -1) {
+      say("お電話はこちらです。\n\n<b>" + SHOP.tel + "</b>\n" + SHOP.hours.split('\n')[0] + "\n\n※ このデモの番号は架空のものです。", ["最初に戻る"]);
+      return;
+    }
+    if (n.indexOf('問い合わせフォーム') > -1) {
+      say("お問い合わせフォームをご用意しています。\nお名前・ご連絡先・ご相談内容をご記入いただければ、翌営業日までにご返信いたします。\n\n※ このデモではフォームは開きません。", ["最初に戻る"]);
+      return;
+    }
+
+    var it = detect(text);
+
+    if (!it) {
+      say("申し訳ありません、うまく聞き取れませんでした。\n\nよくいただくご質問でしたら下のボタンからお選びください。それ以外のご相談は、<b>お電話（" + SHOP.tel + "）</b>にてお願いいたします。", ["営業時間は？","料金はいくら？","初回の流れは？","予約したい"]);
+      return;
+    }
+    if (it.id === 'reserve') { startReserve(); return; }
+    if (it.id === 'human') {
+      say("承知しました。スタッフにおつなぎします。\n\n受付時間内でしたら、<b>" + SHOP.tel + "</b> におかけください。時間外の場合は、お問い合わせフォームからご相談内容をお送りいただければ、翌営業日にご連絡いたします。", ["電話をかける","問い合わせフォーム","最初に戻る"]);
+      return;
+    }
+    say(it.answer, it.chips);
+  }
+
+  function send(text){
+    text = String(text).trim();
+    if (!text) return;
+    bubble(text, 'me');
+    setChips([]);
+    respond(text);
+  }
+
+  function greet(again){
+    if (again) { log.innerHTML = ''; }
+    bubble(
+      (again ? "" : "はじめまして。") + SHOP.name + "の受付です。\nご予約も、ちょっとした質問も、ここでお答えします。\n\n下のボタンを押していただいても、文章を打っていただいても構いません。",
+      'bot'
+    );
+    setChips(["営業時間は？","料金はいくら？","初回の流れは？","予約したい"]);
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var v = input.value;
+    input.value = '';
+    send(v);
+  });
+
+  document.getElementById('tryset').addEventListener('click', function(e){
+    var b = e.target.closest('button[data-q]');
+    if (!b) return;
+    send(b.getAttribute('data-q'));
+    document.getElementById('input').focus({ preventScroll:true });
+  });
+
+  greet(false);
+})();
+</script>
+
+</body>
+</html>
