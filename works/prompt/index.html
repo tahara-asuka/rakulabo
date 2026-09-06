@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>そのまま使えるプロンプトを設計する｜ラクラボ</title>
+<meta name="description" content="AIに毎回同じ指示を書かなくて済むよう、業務ごとのプロンプトを設計してお渡しします。ページ上で条件を選ぶとプロンプトが組み上がり、そのままコピーできます。制作：ラクラボ（田原明日翔）">
+<meta property="og:type" content="website">
+<meta property="og:title" content="そのまま使えるプロンプトを設計する｜ラクラボ">
+<meta property="og:description" content="条件を選ぶとプロンプトが組み上がります。悪い例と良い例の比較、設計の型もあわせて公開しています。">
+<meta name="theme-color" content="#F7F5F1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@500;600&display=swap">
+
+<style>
+:root{
+  --ground:#F7F5F1; --surface:#FFFFFF; --surface-alt:#EFEBE4;
+  --ink:#23302E; --ink-soft:#55625F; --muted:#8A9391;
+  --line:#E1DCD3; --line-strong:#CDC6BA;
+  --accent:#2F6F62; --accent-deep:#23574C; --accent-soft:#DCE8E4;
+  --warn:#B4703A; --warn-soft:#F6EADF;
+  --code-bg:#20302C; --code-tx:#D8E4E0; --code-dim:#7E9891;
+  --font-body:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+  --font-head:"Zen Old Mincho","Hiragino Mincho ProN",serif;
+  --font-mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --radius:14px; --shadow:0 1px 2px rgba(35,48,46,.05),0 8px 28px rgba(35,48,46,.07);
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+    --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+    --line:#2A3533; --line-strong:#3A4744;
+    --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+    --warn:#D79A63; --warn-soft:#2E2620; --code-bg:#101816;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+  --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+  --line:#2A3533; --line-strong:#3A4744;
+  --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+  --warn:#D79A63; --warn-soft:#2E2620; --code-bg:#101816;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+body{ margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-body); font-size:15px; line-height:1.95; -webkit-font-smoothing:antialiased; }
+a{ color:inherit; }
+.wrap{ width:min(100% - 2.5rem, var(--wrap)); margin-inline:auto; }
+.sr{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+.site-head{ border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:saturate(1.2) blur(8px); position:sticky; top:0; z-index:20; }
+.site-head .wrap{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 0; }
+.brand{ display:flex; align-items:baseline; gap:.6rem; text-decoration:none; }
+.brand b{ font-family:var(--font-head); font-size:1.05rem; letter-spacing:.14em; font-weight:600; }
+.brand span{ font-size:.6875rem; letter-spacing:.22em; color:var(--muted); }
+.head-link{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none;
+  border-bottom:1px solid var(--line-strong); padding-bottom:2px; white-space:nowrap; }
+.head-link:hover{ color:var(--ink); border-color:var(--accent); }
+
+.hero{ padding:clamp(3rem,7vw,5rem) 0 clamp(1.5rem,3vw,2.25rem); }
+.eyebrow{ font-size:.75rem; letter-spacing:.2em; color:var(--accent); margin:0 0 1rem; font-weight:700; }
+.hero h1{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.6rem,4.2vw,2.4rem);
+  line-height:1.6; letter-spacing:.03em; margin:0 0 1.1rem; text-wrap:balance; }
+.hero p{ margin:0; max-width:36em; color:var(--ink-soft); }
+.hero .note{ margin-top:1.3rem; font-size:.8125rem; color:var(--muted);
+  border-left:2px solid var(--line-strong); padding-left:.9rem; }
+
+.sec{ padding:clamp(3rem,6vw,4.5rem) 0; border-top:1px solid var(--line); }
+.sec-head{ margin-bottom:clamp(1.5rem,3vw,2.25rem); }
+.sec-head h2{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.3rem,3vw,1.7rem);
+  letter-spacing:.04em; margin:.5rem 0 .6rem; }
+.sec-head p{ margin:0; color:var(--ink-soft); max-width:42em; }
+
+/* ビルダー */
+.builder{ display:grid; gap:1.25rem; }
+@media (min-width:940px){ .builder{ grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr); align-items:start; } }
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+.card-head{ display:flex; align-items:center; gap:.6rem; padding:.7rem 1rem; border-bottom:1px solid var(--line); background:var(--surface-alt); }
+.card-head b{ font-size:.8125rem; letter-spacing:.06em; }
+.card-head .tag{ margin-left:auto; font-size:.6875rem; letter-spacing:.1em; color:var(--muted); }
+.card-body{ padding:1.1rem; }
+
+.fset{ margin:0 0 1.15rem; padding:0; border:0; }
+.fset:last-child{ margin-bottom:0; }
+.fset legend{ padding:0; font-size:.75rem; letter-spacing:.1em; color:var(--muted); font-weight:700; margin-bottom:.55rem; }
+.chips{ display:flex; flex-wrap:wrap; gap:.4rem; }
+.chips button{ font-family:inherit; font-size:.78125rem; padding:.42rem .85rem; border-radius:999px; cursor:pointer;
+  background:var(--surface); color:var(--ink); border:1px solid var(--line-strong); transition:.15s; }
+.chips button:hover{ border-color:var(--accent); color:var(--accent-deep); }
+.chips button[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+.chips button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.fset input[type=text]{ width:100%; font-family:inherit; font-size:.875rem; padding:.55rem .8rem;
+  border:1px solid var(--line-strong); border-radius:9px; background:var(--ground); color:var(--ink); }
+.fset input[type=text]:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+.out{ background:var(--code-bg); color:var(--code-tx); font-family:var(--font-mono);
+  font-size:12.5px; line-height:1.95; padding:1.1rem 1.2rem; white-space:pre-wrap;
+  max-height:520px; overflow-y:auto; margin:0; }
+.out .lbl{ color:var(--code-dim); }
+.outbar{ display:flex; align-items:center; gap:.6rem; padding:.7rem 1rem; border-top:1px solid var(--line); background:var(--surface-alt); flex-wrap:wrap; }
+.btn{ font-family:inherit; font-size:.8125rem; font-weight:700; padding:.55rem 1.2rem; border-radius:999px;
+  cursor:pointer; border:0; background:var(--accent); color:#fff; }
+.btn:hover{ background:var(--accent-deep); }
+.btn:focus-visible{ outline:2px solid var(--accent-deep); outline-offset:2px; }
+.outbar small{ color:var(--muted); font-size:.75rem; }
+.outbar .cnt{ margin-left:auto; font-family:var(--font-mono); font-size:.75rem; color:var(--muted); }
+
+/* 比較 */
+.vs{ display:grid; gap:1rem; }
+@media (min-width:820px){ .vs{ grid-template-columns:1fr 1fr; } }
+.vs-card{ border-radius:var(--radius); border:1px solid var(--line); overflow:hidden; background:var(--surface); }
+.vs-card h3{ margin:0; padding:.75rem 1rem; font-size:.8125rem; letter-spacing:.1em; border-bottom:1px solid var(--line); }
+.vs-card.bad h3{ background:var(--warn-soft); color:var(--warn); }
+.vs-card.good h3{ background:var(--accent-soft); color:var(--accent-deep); }
+.vs-card pre{ margin:0; padding:1rem 1.1rem; font-family:var(--font-mono); font-size:12px;
+  line-height:1.9; white-space:pre-wrap; color:var(--ink-soft); }
+.vs-card .why{ padding:.85rem 1.1rem; border-top:1px solid var(--line); font-size:.8125rem; color:var(--ink-soft); line-height:1.85; background:var(--surface-alt); }
+.vs-card .why b{ color:var(--ink); }
+
+.grid2{ list-style:none; margin:0; padding:0; display:grid; gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+@media (min-width:720px){ .grid2{ grid-template-columns:repeat(2,1fr); } }
+.grid2 li{ background:var(--surface); padding:1.15rem 1.25rem; }
+.grid2 h3{ margin:0 0 .35rem; font-size:.9375rem; font-weight:700; }
+.grid2 p{ margin:0; font-size:.8125rem; color:var(--ink-soft); line-height:1.85; }
+
+.price{ list-style:none; margin:0; padding:0; display:grid; gap:1rem; }
+@media (min-width:720px){ .price{ grid-template-columns:repeat(3,1fr); } }
+.price li{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:1.35rem 1.3rem; }
+.price .lbl{ font-size:.6875rem; letter-spacing:.16em; color:var(--accent); font-weight:700; }
+.price h3{ font-family:var(--font-head); font-size:1.05rem; margin:.5rem 0 .45rem; font-weight:600; }
+.price .amt{ font-family:var(--font-head); font-size:1.45rem; margin:0 0 .65rem; }
+.price .amt small{ font-size:.75rem; color:var(--muted); font-family:var(--font-body); margin-left:.2rem; }
+.price ul{ margin:0; padding-left:1.15em; font-size:.8125rem; color:var(--ink-soft); line-height:1.95; }
+
+.callout{ background:var(--warn-soft); border:1px solid var(--warn); border-radius:var(--radius); padding:1.2rem 1.35rem; }
+.callout h3{ margin:0 0 .5rem; font-size:.9375rem; font-weight:700; color:var(--warn); }
+.callout p{ margin:0; font-size:.8438rem; color:var(--ink-soft); line-height:1.9; }
+
+.disclosure{ background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius); padding:1.3rem 1.4rem; }
+.disclosure h3{ margin:0 0 .6rem; font-size:.9375rem; font-weight:700; }
+.disclosure p{ margin:0 0 .6rem; font-size:.8125rem; color:var(--ink-soft); line-height:1.9; }
+.disclosure p:last-child{ margin-bottom:0; }
+
+.site-foot{ border-top:1px solid var(--line); padding:2.25rem 0 3rem; }
+.site-foot .wrap{ display:flex; flex-wrap:wrap; gap:1rem 1.75rem; align-items:center; justify-content:space-between; }
+.site-foot a{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none; border-bottom:1px solid var(--line-strong); }
+.site-foot a:hover{ color:var(--ink); border-color:var(--accent); }
+.site-foot small{ font-size:.75rem; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="https://tahara-asuka.github.io/rakulabo/"><b>ラクラボ</b><span>RAKU LABO</span></a>
+    <a class="head-link" href="https://tahara-asuka.github.io/rakulabo/">ラクラボのサイトへ →</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">PROMPT DESIGN</p>
+    <h1>「毎回うまく指示できない」を、<br>そのまま使える形にする。</h1>
+    <p>AIの出来が安定しないのは、多くの場合<b>指示の書き方が毎回違う</b>からです。業務ごとに指示を型として組み立てておけば、誰が使っても同じ品質になります。下で条件を選ぶと、実際に使えるプロンプトが組み上がります。</p>
+    <p class="note">組み上がった文章は、そのままコピーしてChatGPTやClaudeに貼れます。</p>
+  </div>
+</section>
+
+<!-- ============ ビルダー ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">TRY IT</p>
+      <h2>条件を選ぶと、プロンプトが組み上がります</h2>
+      <p>実際にお渡しするものは、この形の文章です。使う人は<b>【　】の中を書き換えるだけ</b>で済みます。</p>
+    </div>
+
+    <div class="builder">
+
+      <div class="card">
+        <div class="card-head"><b>条件を選ぶ</b><span class="tag">SETTINGS</span></div>
+        <div class="card-body">
+
+          <fieldset class="fset">
+            <legend>やらせたい仕事</legend>
+            <div class="chips" id="c-task"></div>
+          </fieldset>
+
+          <fieldset class="fset">
+            <legend>読む相手</legend>
+            <div class="chips" id="c-reader"></div>
+          </fieldset>
+
+          <fieldset class="fset">
+            <legend>文の調子</legend>
+            <div class="chips" id="c-tone"></div>
+          </fieldset>
+
+          <fieldset class="fset">
+            <legend>長さ</legend>
+            <div class="chips" id="c-len"></div>
+          </fieldset>
+
+          <fieldset class="fset">
+            <legend>とくに守らせたいこと（複数選べます）</legend>
+            <div class="chips" id="c-rule"></div>
+          </fieldset>
+
+          <fieldset class="fset">
+            <legend>会社・お店の名前（任意）</legend>
+            <label class="sr" for="shop">会社・お店の名前</label>
+            <input type="text" id="shop" placeholder="例）なごみ整体院" maxlength="30">
+          </fieldset>
+
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><b>組み上がったプロンプト</b><span class="tag">OUTPUT</span></div>
+        <pre class="out" id="out"></pre>
+        <div class="outbar">
+          <button class="btn" id="copy" type="button">コピーする</button>
+          <small id="msg"></small>
+          <span class="cnt" id="cnt"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 比較 ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">BEFORE / AFTER</p>
+      <h2>何が違うのか</h2>
+      <p>同じことを頼んでいるのに、返ってくるものが変わります。違いは「AIに任せている判断の数」です。</p>
+    </div>
+
+    <div class="vs">
+      <div class="vs-card bad">
+        <h3>よくある書き方</h3>
+        <pre>整体院のブログ記事を書いて。
+テーマは肩こり。</pre>
+        <div class="why"><b>何が起きるか：</b>読む相手、長さ、口調、書いてはいけないこと。これらを全部AIが勝手に決めます。毎回違うものが出てくるのは、毎回違う判断をしているからです。出てきたものを直す時間のほうが、自分で書くより長くなることもあります。</div>
+      </div>
+      <div class="vs-card good">
+        <h3>設計した書き方</h3>
+        <pre>あなたは整体院のブログを担当するライターです。
+
+【読む相手】
+デスクワークで肩こりに悩む30〜40代の会社員。
+専門用語は知りません。
+
+【書くこと】
+肩こりが起きる仕組みと、自宅でできる対処を2つ。
+
+【条件】
+・800字程度、ですます調
+・見出しを3つ入れる
+・診断や治療効果は断定しない
+・「必ず治る」等の表現は使わない
+
+【出力の形】
+タイトル案を3つ出したあと、本文を書いてください。</pre>
+        <div class="why"><b>何が変わるか：</b>AIが決める余地を減らしました。誰が使っても同じものが出ます。<b>とくに効くのは「禁止事項」です。</b>治療院や士業は、書いてはいけない表現があります。そこを毎回人が直すのをやめられます。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 型 ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">METHOD</p>
+      <h2>設計するときの型</h2>
+      <p>この6つが入っていれば、たいていの業務は安定します。逆に、どれが欠けても出来がぶれます。</p>
+    </div>
+    <ul class="grid2">
+      <li><h3>1｜役割を先に決める</h3><p>「あなたは〇〇です」から始めます。言葉づかいと前提知識がここで決まるので、以降の指示が短くて済みます。</p></li>
+      <li><h3>2｜読む相手を書く</h3><p>年齢層と、その人が何を知らないか。これを書かないと、専門用語だらけの文章が返ってきます。</p></li>
+      <li><h3>3｜出力の形を指定する</h3><p>「タイトル3案のあと本文」のように、返ってくる形を決めます。形が決まっていれば、そのまま次の作業に渡せます。</p></li>
+      <li><h3>4｜禁止事項を書く</h3><p>ここが一番効きます。医療・法務・金融は、書いてはいけない表現があります。毎回人が直すのをやめるための項目です。</p></li>
+      <li><h3>5｜判断に迷ったときの逃げ道を作る</h3><p>「分からない場合は推測せず、確認が必要と書いてください」。AIは黙って作り話をするので、先に逃げ道を与えます。</p></li>
+      <li><h3>6｜差し替える場所を【　】にする</h3><p>使う人が毎回変える部分だけを【　】で囲みます。それ以外は触らせません。これで属人化を防ぎます。</p></li>
+    </ul>
+
+    <div class="callout" style="margin-top:1.25rem">
+      <h3>正直にお伝えしておくこと</h3>
+      <p>プロンプトを整えても、<b>AIが事実を間違えることは無くなりません。</b>数字・固有名詞・法令の内容は、人が確認する前提で組みます。私がお渡しするプロンプトには「確認が必要な箇所には印を付ける」指示を必ず入れていますが、最後に見るのは人です。そこを飛ばせるとは申し上げません。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 料金 ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">PRICE</p>
+      <h2>料金の目安</h2>
+      <p>業務の数と、禁止事項の洗い出しにかかる手間で変わります。</p>
+    </div>
+    <ul class="price">
+      <li><span class="lbl">SINGLE</span><h3>1業務ぶん</h3><p class="amt">5,000円<small>〜</small></p>
+        <ul><li>プロンプト1式</li><li>使い方の手順書</li><li>調整2回まで</li></ul></li>
+      <li><span class="lbl">SET</span><h3>まとめて5業務</h3><p class="amt">20,000円<small>〜</small></p>
+        <ul><li>業務の洗い出しから</li><li>プロンプト5式</li><li>禁止事項の整理</li><li>調整2回まで</li></ul></li>
+      <li><span class="lbl">LESSON</span><h3>使い方のレッスン付き</h3><p class="amt">35,000円<small>〜</small></p>
+        <ul><li>上記5業務ぶん</li><li>60分のオンライン説明</li><li>自分で直せるようになるまで</li><li>1か月の質問対応</li></ul></li>
+    </ul>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="disclosure">
+      <h3>このページについて</h3>
+      <p>上のビルダーは<b>お使いのブラウザの中だけで動いています。</b>AIには接続していません。選んだ条件から文章を組み立てているだけです。組み上がった文章は、そのままChatGPTやClaudeに貼ってお使いいただけます。</p>
+      <p>実際のご依頼では、<b>その業務で実際に使っている言葉・避けたい表現・過去に困った出力</b>を伺ってから作ります。汎用のテンプレートをお渡しするのではなく、その現場の言葉で書くところに時間をかけます。</p>
+      <p>例として出てくる店名は架空のものです。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <a href="https://tahara-asuka.github.io/rakulabo/">ラクラボ トップ</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/chatbot/">AIチャットボット</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/mail-to-sheet/">業務自動化</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/proposal/">提案資料と図解</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/video/">動画の自動生成</a>
+    </div>
+    <small>制作：ラクラボ（田原 明日翔）</small>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var TASKS = {
+    "ブログ記事": {
+      role:"ブログ記事を担当するライター",
+      body:"【テーマ】\n【　テーマをここに書く　】\n\n【書くこと】\nテーマについて、読む相手が知りたいことを説明してください。",
+      form:"タイトル案を3つ出したあと、本文を書いてください。",
+      extra:["体験談として書ける部分は、実際にあったこととして断定しないでください。"]
+    },
+    "お客様への返信": {
+      role:"お客様対応を担当するスタッフ",
+      body:"【いただいたご連絡】\n【　お客様からの文面をここに貼る　】\n\n【返信で伝えたいこと】\n【　伝えたい要点を箇条書きで　】",
+      form:"件名と本文の形で書いてください。",
+      extra:["こちらに非がある場合は、言い訳を先に書かないでください。","確約できないことは「確認のうえご連絡します」としてください。"]
+    },
+    "SNS投稿": {
+      role:"お店のSNSを担当する運用者",
+      body:"【伝えたいこと】\n【　告知や内容をここに書く　】",
+      form:"投稿文を3案出してください。それぞれ末尾にハッシュタグを5つ付けてください。",
+      extra:["絵文字は1投稿につき3つまでにしてください。"]
+    },
+    "議事録の要約": {
+      role:"会議の記録をまとめる担当者",
+      body:"【会議の記録】\n【　文字起こしやメモをここに貼る　】",
+      form:"「決まったこと」「持ち帰り」「次回までの宿題（担当者つき）」の3つに分けて書いてください。",
+      extra:["記録に無いことを補って書かないでください。","発言者が不明な箇所は「発言者不明」と記してください。"]
+    },
+    "求人票の文章": {
+      role:"採用担当者",
+      body:"【募集する仕事】\n【　職種と仕事内容をここに書く　】\n\n【働き方】\n【　勤務時間・雇用形態・報酬　】",
+      form:"「どんな人に来てほしいか」「仕事の内容」「働き方」「応募方法」の順で書いてください。",
+      extra:["性別・年齢を条件として書かないでください。","「アットホームな職場」など、中身のない表現は使わないでください。"]
+    }
+  };
+
+  var READERS = {
+    "一般のお客様":"専門用語を知らない一般の方。詳しい説明より、自分にどう関係するかを知りたいと思っています。",
+    "経営者・個人事業主":"時間がない経営者。結論と、判断に必要な材料を先に知りたいと思っています。",
+    "同業・専門職":"同じ分野の専門家。基礎的な説明は不要で、具体的な内容を求めています。",
+    "求職者":"仕事を探している方。待遇と働き方を、正確に知りたいと思っています。"
+  };
+
+  var TONES = {
+    "ていねい（ですます）":"ですます調。落ち着いた、誠実な調子で書いてください。",
+    "やわらかい":"ですます調。話しかけるような、やわらかい調子で書いてください。",
+    "簡潔・事務的":"ですます調。装飾を省き、事実を短く伝えてください。"
+  };
+
+  var LENS = {
+    "短め（400字）":"400字程度",
+    "標準（800字）":"800字程度",
+    "長め（1500字）":"1500字程度",
+    "指定しない":null
+  };
+
+  var RULES = {
+    "医療・効果の断定を避ける":"診断・治療効果を断定しないでください。「治る」「改善します」といった表現は使わないでください。",
+    "法律の判断をしない":"法令の適用可否を断定しないでください。個別の判断が要る箇所は「専門家にご確認ください」としてください。",
+    "数字は勝手に作らない":"根拠のない数字・割合・順位を書かないでください。数字が必要な箇所は【数字を入れる】と記してください。",
+    "煽らない":"不安を煽る表現、限定を強調する表現は使わないでください。",
+    "見出しを入れる":"見出しを3つ入れて、読みやすく区切ってください。",
+    "専門用語を使わない":"専門用語は使わず、使う場合は必ずその場で言い換えを添えてください。"
+  };
+
+  var state = {
+    task:"ブログ記事",
+    reader:"一般のお客様",
+    tone:"ていねい（ですます）",
+    len:"標準（800字）",
+    rules:["医療・効果の断定を避ける","数字は勝手に作らない"],
+    shop:""
+  };
+
+  function chips(holder, obj, key, multi){
+    var box = document.getElementById(holder);
+    Object.keys(obj).forEach(function(k){
+      var b = document.createElement('button');
+      b.type='button'; b.textContent = k;
+      function sync(){
+        var on = multi ? state[key].indexOf(k) > -1 : state[key] === k;
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+      b.addEventListener('click', function(){
+        if (multi){
+          var i = state[key].indexOf(k);
+          if (i > -1) state[key].splice(i,1); else state[key].push(k);
+        } else {
+          state[key] = k;
+        }
+        [].forEach.call(box.children, function(x){ x.dispatchEvent(new Event('sync')); });
+        build();
+      });
+      b.addEventListener('sync', sync);
+      sync();
+      box.appendChild(b);
+    });
+  }
+
+  function build(){
+    var t = TASKS[state.task];
+    var lines = [];
+
+    lines.push("あなたは" + (state.shop ? "「" + state.shop + "」の" : "") + t.role + "です。");
+    lines.push("");
+    lines.push("【読む相手】");
+    lines.push(READERS[state.reader]);
+    lines.push("");
+    lines.push(t.body);
+    lines.push("");
+    lines.push("【条件】");
+    var cond = [];
+    if (LENS[state.len]) cond.push(LENS[state.len]);
+    cond.push(TONES[state.tone]);
+    state.rules.forEach(function(r){ cond.push(RULES[r]); });
+    t.extra.forEach(function(e){ cond.push(e); });
+    cond.forEach(function(c){ lines.push("・" + c); });
+    lines.push("");
+    lines.push("【出力の形】");
+    lines.push(t.form);
+    lines.push("");
+    lines.push("【分からないとき】");
+    lines.push("情報が足りない箇所は、推測で書かずに【要確認】と記してください。");
+
+    var text = lines.join("\n");
+    document.getElementById('out').textContent = text;
+    document.getElementById('cnt').textContent = text.length + " 文字";
+    return text;
+  }
+
+  chips('c-task',   TASKS,   'task',   false);
+  chips('c-reader', READERS, 'reader', false);
+  chips('c-tone',   TONES,   'tone',   false);
+  chips('c-len',    LENS,    'len',    false);
+  chips('c-rule',   RULES,   'rules',  true);
+
+  document.getElementById('shop').addEventListener('input', function(e){
+    state.shop = e.target.value.trim();
+    build();
+  });
+
+  document.getElementById('copy').addEventListener('click', function(){
+    var text = document.getElementById('out').textContent;
+    var msg = document.getElementById('msg');
+    function ok(){ msg.textContent = 'コピーしました'; setTimeout(function(){ msg.textContent=''; }, 2200); }
+    function ng(){ msg.textContent = '選択してコピーしてください'; }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(ok, ng);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); ok(); } catch(e){ ng(); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  build();
+})();
+</script>
+
+</body>
+</html>

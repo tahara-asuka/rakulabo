@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>データを入れると動画が書き出される仕組み（Remotion）｜ラクラボ</title>
+<meta name="description" content="テキストを差し替えるだけで同じ体裁の動画を量産できる仕組みです。Remotionで組んだ構成を、このページ上で再生して確認できます。制作：ラクラボ（田原明日翔）">
+<meta property="og:type" content="website">
+<meta property="og:title" content="データを入れると動画が書き出される仕組み（Remotion）">
+<meta property="og:description" content="編集作業を挟まずに、同じ体裁の動画を量産する仕組み。ページ上で再生して確認できます。">
+<meta name="theme-color" content="#F7F5F1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@500;600&display=swap">
+
+<style>
+:root{
+  --ground:#F7F5F1; --surface:#FFFFFF; --surface-alt:#EFEBE4;
+  --ink:#23302E; --ink-soft:#55625F; --muted:#8A9391;
+  --line:#E1DCD3; --line-strong:#CDC6BA;
+  --accent:#2F6F62; --accent-deep:#23574C; --accent-soft:#DCE8E4;
+  --warn:#B4703A; --warn-soft:#F6EADF;
+  --code-bg:#20302C; --code-tx:#D8E4E0; --code-dim:#7E9891; --code-key:#8FD3BE; --code-str:#E3C08D;
+  --font-body:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+  --font-head:"Zen Old Mincho","Hiragino Mincho ProN",serif;
+  --font-mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --radius:14px; --shadow:0 1px 2px rgba(35,48,46,.05),0 8px 28px rgba(35,48,46,.07);
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+    --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+    --line:#2A3533; --line-strong:#3A4744;
+    --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+    --warn:#D79A63; --warn-soft:#2E2620; --code-bg:#101816;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#141A19; --surface:#1B2321; --surface-alt:#212B29;
+  --ink:#E6E9E7; --ink-soft:#AFBAB7; --muted:#7E8987;
+  --line:#2A3533; --line-strong:#3A4744;
+  --accent:#5FA795; --accent-deep:#7CC0AE; --accent-soft:#22322E;
+  --warn:#D79A63; --warn-soft:#2E2620; --code-bg:#101816;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+body{ margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-body); font-size:15px; line-height:1.95; -webkit-font-smoothing:antialiased; }
+a{ color:inherit; }
+.wrap{ width:min(100% - 2.5rem, var(--wrap)); margin-inline:auto; }
+.sr{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+.site-head{ border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:saturate(1.2) blur(8px); position:sticky; top:0; z-index:20; }
+.site-head .wrap{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 0; }
+.brand{ display:flex; align-items:baseline; gap:.6rem; text-decoration:none; }
+.brand b{ font-family:var(--font-head); font-size:1.05rem; letter-spacing:.14em; font-weight:600; }
+.brand span{ font-size:.6875rem; letter-spacing:.22em; color:var(--muted); }
+.head-link{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none;
+  border-bottom:1px solid var(--line-strong); padding-bottom:2px; white-space:nowrap; }
+.head-link:hover{ color:var(--ink); border-color:var(--accent); }
+
+.hero{ padding:clamp(3rem,7vw,5rem) 0 clamp(1.5rem,3vw,2.25rem); }
+.eyebrow{ font-size:.75rem; letter-spacing:.2em; color:var(--accent); margin:0 0 1rem; font-weight:700; }
+.hero h1{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.6rem,4.2vw,2.4rem);
+  line-height:1.6; letter-spacing:.03em; margin:0 0 1.1rem; text-wrap:balance; }
+.hero p{ margin:0; max-width:36em; color:var(--ink-soft); }
+.hero .note{ margin-top:1.3rem; font-size:.8125rem; color:var(--muted);
+  border-left:2px solid var(--line-strong); padding-left:.9rem; }
+
+.sec{ padding:clamp(3rem,6vw,4.5rem) 0; border-top:1px solid var(--line); }
+.sec-head{ margin-bottom:clamp(1.5rem,3vw,2.25rem); }
+.sec-head h2{ font-family:var(--font-head); font-weight:600; font-size:clamp(1.3rem,3vw,1.7rem);
+  letter-spacing:.04em; margin:.5rem 0 .6rem; }
+.sec-head p{ margin:0; color:var(--ink-soft); max-width:42em; }
+
+/* ---------- プレイヤー ---------- */
+.studio{ display:grid; gap:1.25rem; }
+@media (min-width:940px){ .studio{ grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); align-items:start; } }
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+.card-head{ display:flex; align-items:center; gap:.6rem; padding:.7rem 1rem; border-bottom:1px solid var(--line); background:var(--surface-alt); }
+.card-head b{ font-size:.8125rem; letter-spacing:.06em; }
+.card-head .tag{ margin-left:auto; font-size:.6875rem; letter-spacing:.1em; color:var(--muted); }
+.card-body{ padding:1rem; }
+
+.screen{ position:relative; aspect-ratio:16/9; background:#101816; overflow:hidden; }
+.scene{ position:absolute; inset:0; display:none; padding:clamp(1rem,3.2vw,2.4rem);
+  flex-direction:column; justify-content:center; color:#EDF2F0; }
+.scene[data-on="1"]{ display:flex; }
+.scene .kicker{ font-size:clamp(.625rem,1.3vw,.75rem); letter-spacing:.24em; color:#7CC0AE; margin:0 0 .7rem; font-weight:700; }
+.scene h3{ font-family:var(--font-head); font-weight:600; margin:0; letter-spacing:.04em;
+  font-size:clamp(1.05rem,3.4vw,2rem); line-height:1.5; }
+.scene p{ margin:.7rem 0 0; font-size:clamp(.6875rem,1.5vw,.9375rem); color:#A9BDB8; line-height:1.9; max-width:30em; }
+.scene .big{ font-family:var(--font-head); font-size:clamp(2rem,8vw,4.5rem); line-height:1.1; color:#7CC0AE; }
+.scene .rows{ display:grid; gap:.4rem; margin-top:.9rem; }
+.scene .row{ display:flex; align-items:baseline; gap:.7rem; font-size:clamp(.6875rem,1.5vw,.9375rem); }
+.scene .row i{ width:1.5em; flex:none; font-style:normal; color:#7CC0AE; font-family:var(--font-head); }
+.scene .brandline{ margin-top:1.1rem; font-size:clamp(.625rem,1.3vw,.75rem); letter-spacing:.2em; color:#7E9891; }
+.anim{ opacity:0; transform:translateY(10px); }
+.scene[data-on="1"] .anim{ animation:rise .55s ease-out forwards; }
+.scene[data-on="1"] .anim.d1{ animation-delay:.12s; }
+.scene[data-on="1"] .anim.d2{ animation-delay:.26s; }
+.scene[data-on="1"] .anim.d3{ animation-delay:.40s; }
+@keyframes rise{ to{ opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion: reduce){ .anim{ opacity:1; transform:none; } .scene[data-on="1"] .anim{ animation:none; } }
+.wm{ position:absolute; right:.8rem; bottom:.7rem; font-size:.625rem; letter-spacing:.14em; color:#4E635E; }
+
+.bar{ display:flex; align-items:center; gap:.75rem; padding:.7rem 1rem; border-top:1px solid var(--line); background:var(--surface-alt); }
+.bar button{ width:38px; height:38px; border-radius:50%; border:0; background:var(--accent); color:#fff; cursor:pointer; display:grid; place-items:center; flex:none; }
+.bar button:hover{ background:var(--accent-deep); }
+.bar button:focus-visible{ outline:2px solid var(--accent-deep); outline-offset:2px; }
+.bar svg{ width:15px; height:15px; }
+.track{ flex:1; height:5px; border-radius:99px; background:var(--line-strong); overflow:hidden; }
+.track i{ display:block; height:100%; width:0%; background:var(--accent); }
+.time{ font-family:var(--font-mono); font-size:.75rem; color:var(--muted); min-width:5.5em; text-align:right; }
+
+textarea#data{ width:100%; min-height:200px; resize:vertical; font-family:var(--font-mono); font-size:12.5px;
+  line-height:1.85; padding:.85rem .9rem; border:1px solid var(--line-strong); border-radius:10px;
+  background:var(--ground); color:var(--ink); }
+textarea#data:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+.run{ display:flex; gap:.6rem; align-items:center; margin-top:.85rem; flex-wrap:wrap; }
+.btn{ font-family:inherit; font-size:.875rem; font-weight:700; padding:.62rem 1.35rem; border-radius:999px;
+  cursor:pointer; border:0; background:var(--accent); color:#fff; }
+.btn:hover{ background:var(--accent-deep); }
+.btn.ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--line-strong); font-weight:400; }
+.btn.ghost:hover{ color:var(--ink); border-color:var(--accent); }
+.run small{ color:var(--muted); font-size:.75rem; }
+.err{ color:var(--warn); font-size:.75rem; }
+
+pre.code{ margin:0; background:var(--code-bg); color:var(--code-tx); border-radius:var(--radius);
+  padding:1.2rem 1.3rem; overflow-x:auto; font-family:var(--font-mono); font-size:12.5px; line-height:1.85; }
+pre.code .c{ color:var(--code-dim); } pre.code .k{ color:var(--code-key); } pre.code .s{ color:var(--code-str); }
+
+.grid2{ list-style:none; margin:0; padding:0; display:grid; gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+@media (min-width:720px){ .grid2{ grid-template-columns:repeat(2,1fr); } }
+.grid2 li{ background:var(--surface); padding:1.15rem 1.25rem; }
+.grid2 h3{ margin:0 0 .35rem; font-size:.9375rem; font-weight:700; }
+.grid2 p{ margin:0; font-size:.8125rem; color:var(--ink-soft); line-height:1.85; }
+
+.callout{ background:var(--warn-soft); border:1px solid var(--warn); border-radius:var(--radius); padding:1.2rem 1.35rem; }
+.callout h3{ margin:0 0 .5rem; font-size:.9375rem; font-weight:700; color:var(--warn); }
+.callout p{ margin:0; font-size:.8438rem; color:var(--ink-soft); line-height:1.9; }
+
+.disclosure{ background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius); padding:1.3rem 1.4rem; }
+.disclosure h3{ margin:0 0 .6rem; font-size:.9375rem; font-weight:700; }
+.disclosure p{ margin:0 0 .6rem; font-size:.8125rem; color:var(--ink-soft); line-height:1.9; }
+.disclosure p:last-child{ margin-bottom:0; }
+
+.site-foot{ border-top:1px solid var(--line); padding:2.25rem 0 3rem; }
+.site-foot .wrap{ display:flex; flex-wrap:wrap; gap:1rem 1.75rem; align-items:center; justify-content:space-between; }
+.site-foot a{ font-size:.8125rem; color:var(--ink-soft); text-decoration:none; border-bottom:1px solid var(--line-strong); }
+.site-foot a:hover{ color:var(--ink); border-color:var(--accent); }
+.site-foot small{ font-size:.75rem; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="https://tahara-asuka.github.io/rakulabo/"><b>ラクラボ</b><span>RAKU LABO</span></a>
+    <a class="head-link" href="https://tahara-asuka.github.io/rakulabo/">ラクラボのサイトへ →</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">VIDEO AUTOMATION</p>
+    <h1>データを入れ替えるだけで、<br>同じ体裁の動画が出てくる。</h1>
+    <p>動画を1本ずつ編集するのをやめて、<b>コードで組み立てる</b>やり方です。文言や数字を書き換えれば、同じデザインのまま何本でも書き出せます。下のデータを編集して「反映して再生」を押してみてください。</p>
+    <p class="note">実際の納品はMP4です。このページでは、同じ構成をブラウザ上で再生しています。</p>
+  </div>
+</section>
+
+<!-- ============ プレイヤー ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">TRY IT</p>
+      <h2>データを書き換えて、再生してみてください</h2>
+      <p>右のデータは、動画に流し込む中身です。店名や数字を変えて反映すると、<b>デザインはそのままに、中身だけが差し替わります。</b>これが「量産できる」ということの意味です。</p>
+    </div>
+
+    <div class="studio">
+
+      <!-- プレビュー -->
+      <div class="card">
+        <div class="card-head"><b>プレビュー</b><span class="tag">16:9 ／ 20秒</span></div>
+        <div class="screen" id="screen">
+
+          <div class="scene" data-on="1" data-dur="4">
+            <p class="kicker anim" id="s1k">CAMPAIGN</p>
+            <h3 class="anim d1" id="s1t">秋の new open キャンペーン</h3>
+            <p class="anim d2" id="s1s">10月末まで</p>
+            <div class="wm">RAKU LABO</div>
+          </div>
+
+          <div class="scene" data-on="0" data-dur="5">
+            <p class="kicker anim">POINT</p>
+            <div class="rows">
+              <div class="row anim d1"><i>01</i><span id="s2a">初回カウンセリング無料</span></div>
+              <div class="row anim d2"><i>02</i><span id="s2b">当日予約もWebから</span></div>
+              <div class="row anim d3"><i>03</i><span id="s2c">駅から徒歩4分</span></div>
+            </div>
+            <div class="wm">RAKU LABO</div>
+          </div>
+
+          <div class="scene" data-on="0" data-dur="5">
+            <p class="kicker anim">PRICE</p>
+            <div class="big anim d1" id="s3p">6,600円</div>
+            <p class="anim d2" id="s3n">初回のみ ／ 検査と施術で約60分</p>
+            <div class="wm">RAKU LABO</div>
+          </div>
+
+          <div class="scene" data-on="0" data-dur="6">
+            <p class="kicker anim">RESERVE</p>
+            <h3 class="anim d1" id="s4t">なごみ整体院</h3>
+            <p class="anim d2" id="s4s">ご予約はプロフィールのリンクから</p>
+            <p class="brandline anim d3" id="s4b">阿佐ケ谷駅 南口 徒歩4分</p>
+            <div class="wm">RAKU LABO</div>
+          </div>
+
+        </div>
+        <div class="bar">
+          <button id="play" type="button" aria-label="再生">
+            <svg id="picon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="track"><i id="fill"></i></div>
+          <span class="time" id="time">0.0 / 20.0s</span>
+        </div>
+      </div>
+
+      <!-- データ -->
+      <div class="card">
+        <div class="card-head"><b>流し込むデータ</b><span class="tag">JSON</span></div>
+        <div class="card-body">
+          <label class="sr" for="data">動画に流し込むデータ</label>
+          <textarea id="data" spellcheck="false"></textarea>
+          <div class="run">
+            <button class="btn" id="apply" type="button">反映して再生</button>
+            <button class="btn ghost" id="reset" type="button">元に戻す</button>
+            <small id="msg"></small>
+          </div>
+          <p style="font-size:.8125rem;color:var(--ink-soft);margin:1rem 0 0;line-height:1.9">
+            実際の運用では、この JSON をスプレッドシートから読み込みます。<b>行が10あれば、動画が10本書き出されます。</b>1本ずつ編集ソフトを開く必要がありません。
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 仕組み ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">HOW IT WORKS</p>
+      <h2>実際のコード</h2>
+      <p>Remotion は、Reactで動画を書くための道具です。動画を「時間の関数」として書き、コマンドで MP4 に書き出します。下は上のプレビューと同じ構成の中心部分です。</p>
+    </div>
+
+<pre class="code"><code><span class="c">// 4つの場面をつなぐ。1つの場面 = 決まった秒数のコンポーネント</span>
+<span class="k">export const</span> Ad = ({ data }) =&gt; (
+  &lt;<span class="k">Series</span>&gt;
+    &lt;Series.Sequence durationInFrames={<span class="s">120</span>}&gt;&lt;Cover  title={data.title} sub={data.sub} /&gt;&lt;/Series.Sequence&gt;
+    &lt;Series.Sequence durationInFrames={<span class="s">150</span>}&gt;&lt;Points points={data.points} /&gt;&lt;/Series.Sequence&gt;
+    &lt;Series.Sequence durationInFrames={<span class="s">150</span>}&gt;&lt;Price  price={data.price} note={data.note} /&gt;&lt;/Series.Sequence&gt;
+    &lt;Series.Sequence durationInFrames={<span class="s">180</span>}&gt;&lt;Outro  shop={data.shop} access={data.access} /&gt;&lt;/Series.Sequence&gt;
+  &lt;/<span class="k">Series</span>&gt;
+);
+
+<span class="c">// 文字が下から浮かび上がる動き。「今が何フレーム目か」から位置を決める</span>
+<span class="k">const</span> Rise = ({ children, delay = <span class="s">0</span> }) =&gt; {
+  <span class="k">const</span> frame = useCurrentFrame();
+  <span class="k">const</span> p = spring({ frame: frame - delay, fps: <span class="s">30</span>, config: { damping: <span class="s">200</span> } });
+  <span class="k">return</span> &lt;div style={{ opacity: p, transform: `translateY(${(<span class="s">1</span> - p) * <span class="s">14</span>}px)` }}&gt;{children}&lt;/div&gt;;
+};
+
+<span class="c">// スプレッドシートの1行 = 動画1本。行数ぶんまとめて書き出す</span>
+<span class="c">// npx remotion render Ad out/$SHOP.mp4 --props=./rows/$SHOP.json</span></code></pre>
+
+    <ul class="grid2" style="margin-top:1.5rem">
+      <li><h3>編集作業がありません</h3><p>タイムラインに素材を並べる工程がなくなります。10本作っても、増えるのはデータの行数だけです。</p></li>
+      <li><h3>直しが一瞬で全部に効きます</h3><p>「ロゴの位置を5px下げたい」を1か所直せば、全本に反映されます。書き出し直すだけです。</p></li>
+      <li><h3>体裁がぶれません</h3><p>人が並べないので、文字サイズや余白が本ごとに変わることがありません。</p></li>
+      <li><h3>差し替えを人に任せられます</h3><p>お店の方はスプレッドシートを編集するだけ。動画ソフトを触る必要がありません。</p></li>
+    </ul>
+
+    <div class="callout" style="margin-top:1.25rem">
+      <h3>この作り方が向かないもの</h3>
+      <p>1本だけの、凝った演出の動画には向きません。仕組みを組む時間のほうが長くなるためです。<b>同じ体裁で数を作るとき</b>にだけ効きます。店舗ごとの広告、商品ごとの紹介、毎月の実績報告、求人票の動画版などが該当します。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 注記 ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="disclosure">
+      <h3>このページについて</h3>
+      <p>上のプレビューは<b>ブラウザ上で同じ構成を再現したもの</b>で、動画ファイルを再生しているわけではありません。動きと構成を確認していただくために用意しました。実際の納品は Remotion で書き出した <b>MP4</b>（1920×1080／30fps）です。</p>
+      <p>掲載しているコードは、この構成を Remotion で書いた場合の中心部分です。効果音やBGM、フォントの読み込みなどは省略しています。</p>
+      <p>「なごみ整体院」は制作サンプルのための架空の店舗で、金額・所在地はすべて架空です。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <a href="https://tahara-asuka.github.io/rakulabo/">ラクラボ トップ</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/chatbot/">AIチャットボット</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/mail-to-sheet/">業務自動化</a>&nbsp;&nbsp;
+      <a href="https://tahara-asuka.github.io/rakulabo/works/proposal/">提案資料と図解</a>
+    </div>
+    <small>制作：ラクラボ（田原 明日翔）</small>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var DEFAULT = {
+    kicker: "CAMPAIGN",
+    title:  "秋の new open キャンペーン",
+    sub:    "10月末まで",
+    points: ["初回カウンセリング無料", "当日予約もWebから", "駅から徒歩4分"],
+    price:  "6,600円",
+    note:   "初回のみ ／ 検査と施術で約60分",
+    shop:   "なごみ整体院",
+    cta:    "ご予約はプロフィールのリンクから",
+    access: "阿佐ケ谷駅 南口 徒歩4分"
+  };
+
+  var scenes = [].slice.call(document.querySelectorAll('#screen .scene'));
+  var durs   = scenes.map(function(s){ return parseFloat(s.getAttribute('data-dur')) || 4; });
+  var total  = durs.reduce(function(a,b){ return a+b; }, 0);
+
+  var playBtn = document.getElementById('play');
+  var picon   = document.getElementById('picon');
+  var fill    = document.getElementById('fill');
+  var timeEl  = document.getElementById('time');
+  var dataEl  = document.getElementById('data');
+  var msg     = document.getElementById('msg');
+
+  var t = 0, playing = false, raf = null, last = 0;
+
+  var PLAY  = '<path d="M8 5v14l11-7z"/>';
+  var PAUSE = '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>';
+
+  function render(d){
+    document.getElementById('s1k').textContent = d.kicker;
+    document.getElementById('s1t').textContent = d.title;
+    document.getElementById('s1s').textContent = d.sub;
+    document.getElementById('s2a').textContent = d.points[0] || '';
+    document.getElementById('s2b').textContent = d.points[1] || '';
+    document.getElementById('s2c').textContent = d.points[2] || '';
+    document.getElementById('s3p').textContent = d.price;
+    document.getElementById('s3n').textContent = d.note;
+    document.getElementById('s4t').textContent = d.shop;
+    document.getElementById('s4s').textContent = d.cta;
+    document.getElementById('s4b').textContent = d.access;
+  }
+
+  function sceneAt(sec){
+    var acc = 0;
+    for (var i=0; i<durs.length; i++){
+      acc += durs[i];
+      if (sec < acc) return i;
+    }
+    return durs.length - 1;
+  }
+
+  function paint(){
+    var i = sceneAt(t);
+    scenes.forEach(function(s, k){
+      var on = (k === i) ? '1' : '0';
+      if (s.getAttribute('data-on') !== on) s.setAttribute('data-on', on);
+    });
+    fill.style.width = Math.min(100, (t/total)*100) + '%';
+    timeEl.textContent = t.toFixed(1) + ' / ' + total.toFixed(1) + 's';
+  }
+
+  function restartScene(){
+    /* アニメーションを頭から流し直す */
+    var i = sceneAt(t);
+    scenes.forEach(function(s, k){ s.setAttribute('data-on','0'); });
+    void scenes[i].offsetWidth;
+    scenes[i].setAttribute('data-on','1');
+  }
+
+  function loop(ts){
+    if (!playing) return;
+    if (!last) last = ts;
+    var dt = (ts - last) / 1000;
+    last = ts;
+    var before = sceneAt(t);
+    t += dt;
+    if (t >= total){ t = 0; restartScene(); }
+    else if (sceneAt(t) !== before){ restartScene(); }
+    paint();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function play(){
+    playing = true; last = 0;
+    picon.innerHTML = PAUSE;
+    playBtn.setAttribute('aria-label','一時停止');
+    restartScene();
+    raf = requestAnimationFrame(loop);
+  }
+  function pause(){
+    playing = false;
+    if (raf) cancelAnimationFrame(raf);
+    picon.innerHTML = PLAY;
+    playBtn.setAttribute('aria-label','再生');
+  }
+
+  playBtn.addEventListener('click', function(){ playing ? pause() : play(); });
+
+  document.getElementById('apply').addEventListener('click', function(){
+    var d;
+    try { d = JSON.parse(dataEl.value); }
+    catch (e) { msg.className = 'err'; msg.textContent = 'JSONの書式に誤りがあります（' + e.message.slice(0,40) + '）'; return; }
+    if (!d.points || !d.points.length) d.points = DEFAULT.points;
+    Object.keys(DEFAULT).forEach(function(k){ if (d[k] === undefined) d[k] = DEFAULT[k]; });
+    render(d);
+    msg.className = ''; msg.textContent = '反映しました';
+    t = 0; pause(); play();
+  });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    dataEl.value = JSON.stringify(DEFAULT, null, 2);
+    render(DEFAULT);
+    msg.className = ''; msg.textContent = '元に戻しました';
+    t = 0; pause(); paint(); restartScene();
+  });
+
+  dataEl.value = JSON.stringify(DEFAULT, null, 2);
+  render(DEFAULT);
+  paint();
+})();
+</script>
+
+</body>
+</html>
