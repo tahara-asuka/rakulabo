@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SNS広告・Webバナー制作サンプル｜Cafe Lueur ｜ ラクラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Old+Mincho:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#16150F; --surface:#1E1C16; --surface-alt:#262319;
+  --line:#2E2A21; --line-strong:#423C30;
+  --ink:#EDE7DA; --ink-soft:#C4BCAC; --greige:#948C7C;
+  --brass:#D9BC90; --brass-deep:#C5A880;
+  --font-body:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+  --font-display:"Cormorant Garamond","Zen Old Mincho",Georgia,serif;
+  --font-mincho:"Zen Old Mincho","Cormorant Garamond",serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-body);line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:64px 24px 96px}
+header.page{border-bottom:1px solid var(--line);padding-bottom:40px;margin-bottom:56px}
+.eyebrow{font-family:var(--font-display);letter-spacing:.22em;text-transform:uppercase;color:var(--brass);font-size:13px;margin:0 0 14px}
+h1{font-family:var(--font-mincho);font-size:clamp(28px,4.6vw,44px);line-height:1.4;margin:0 0 20px;font-weight:600}
+.lead{color:var(--ink-soft);max-width:62ch;margin:0}
+h2{font-family:var(--font-mincho);font-size:24px;margin:72px 0 8px;font-weight:600}
+.sub{color:var(--greige);font-size:14px;margin:0 0 28px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px;padding:0;list-style:none}
+.meta li{font-size:12px;letter-spacing:.06em;color:var(--ink-soft);border:1px solid var(--line-strong);border-radius:999px;padding:5px 13px}
+.note{background:var(--surface);border:1px solid var(--line);border-left:2px solid var(--brass);padding:22px 24px;margin:28px 0 0;font-size:14.5px;color:var(--ink-soft)}
+.note b{color:var(--ink);font-weight:700}
+.note ul{margin:12px 0 0;padding-left:1.15em}
+.note li{margin:6px 0}
+.grid{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.item{margin:0}
+.frame{background:var(--surface-alt);border:1px solid var(--line);overflow:hidden;position:relative}
+.cap{font-size:12.5px;color:var(--greige);margin:10px 0 0;letter-spacing:.04em}
+.cap b{color:var(--brass);font-weight:500}
+
+.banner{position:relative;overflow:hidden;transform-origin:top left;background:var(--ground)}
+.banner img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.veil{position:absolute;inset:0}
+.b-inner{position:absolute;inset:0;display:flex;flex-direction:column;padding:64px}
+.logo{font-family:var(--font-display);letter-spacing:.3em;text-transform:uppercase;color:var(--brass);line-height:1}
+.copy{font-family:var(--font-mincho);color:#FBFBFA;font-weight:600;letter-spacing:.02em;margin:0}
+.subcopy{color:#E6E0D4;margin:0;letter-spacing:.03em}
+.cta{display:inline-flex;align-items:center;gap:.6em;background:var(--brass);color:#171510;font-weight:700;border-radius:999px;align-self:flex-start}
+.cta.outline{background:transparent;color:var(--brass);border:2px solid var(--brass)}
+.tag{align-self:flex-start;border:1px solid rgba(217,188,144,.55);color:var(--brass);border-radius:999px;letter-spacing:.1em}
+.spacer{flex:1}
+
+.sq{width:1080px;height:1080px;transform:scale(.3)}
+.sq-box{width:324px;height:324px}
+.sq .logo{font-size:26px}
+.sq .copy{font-size:76px;line-height:1.34}
+.sq .subcopy{font-size:30px;line-height:1.7;margin-top:26px}
+.sq .cta{font-size:30px;padding:22px 40px;margin-top:38px}
+.sq .tag{font-size:22px;padding:10px 22px;margin-bottom:30px}
+
+.pt{width:1080px;height:1350px;transform:scale(.3)}
+.pt-box{width:324px;height:405px}
+.pt .logo{font-size:26px}
+.pt .copy{font-size:82px;line-height:1.36}
+.pt .subcopy{font-size:31px;line-height:1.75;margin-top:28px}
+.pt .cta{font-size:31px;padding:23px 42px;margin-top:40px}
+
+.st{width:1080px;height:1920px;transform:scale(.238)}
+.st-box{width:257px;height:457px}
+.st .b-inner{padding:96px 72px 300px}
+.st .logo{font-size:28px}
+.st .copy{font-size:92px;line-height:1.34}
+.st .subcopy{font-size:34px;line-height:1.7;margin-top:32px}
+.st .cta{font-size:34px;padding:26px 48px;margin-top:44px}
+.safe{position:absolute;left:0;right:0;bottom:0;height:300px;border-top:1px dashed rgba(217,188,144,.45);display:flex;align-items:center;justify-content:center;color:rgba(217,188,144,.75);font-size:26px;letter-spacing:.14em}
+
+.wd{width:1200px;height:628px;transform:scale(.4)}
+.wd-box{width:480px;height:251px}
+.wd .b-inner{padding:56px 64px;justify-content:center}
+.wd .logo{font-size:22px;margin-bottom:22px}
+.wd .copy{font-size:60px;line-height:1.3}
+.wd .subcopy{font-size:25px;margin-top:20px}
+.wd .cta{font-size:25px;padding:18px 34px;margin-top:30px}
+
+footer.page{border-top:1px solid var(--line);margin-top:88px;padding-top:32px;color:var(--greige);font-size:13.5px}
+footer.page a{color:var(--brass)}
+@media(max-width:700px){.wrap{padding:44px 18px 72px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <p class="eyebrow">Banner Ad Samples</p>
+  <h1>SNS広告・Webバナー制作サンプル<br>Cafe Lueur</h1>
+  <p class="lead">
+    自主制作のブランド「Cafe Lueur」を題材に、SNS広告・Webバナーを制作しました。
+    LPのデザインから実装・公開まで自分で行ったブランドなので、
+    広告面まで世界観を崩さずに展開できるかを確かめる目的で作っています。
+    1つの訴求軸につきA/Bの派生案を用意し、入稿サイズへ展開しました。
+  </p>
+  <ul class="meta" style="margin-top:26px">
+    <li>Instagram フィード 1080×1080</li>
+    <li>フィード縦 1080×1350</li>
+    <li>ストーリーズ 1080×1920</li>
+    <li>Web / EC 1200×628</li>
+    <li>制作：Figma / HTML・CSS</li>
+    <li>納品：PNG・JPEG ＋ 編集データ</li>
+  </ul>
+</header>
+
+<h2>訴求軸A｜世界観で引く</h2>
+<p class="sub">「何の店か」より先に「どんな時間が流れているか」を見せる。保存とフォローを取りにいく面。</p>
+
+<div class="grid">
+  <figure class="item">
+    <div class="frame sq-box"><div class="banner sq">
+      <img class="bg" src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1400&q=80" alt="">
+      <div class="veil" style="background:linear-gradient(180deg,rgba(10,9,6,.62) 0%,rgba(10,9,6,.30) 42%,rgba(10,9,6,.80) 100%)"></div>
+      <div class="b-inner">
+        <div class="logo">Cafe Lueur</div>
+        <div class="spacer"></div>
+        <p class="copy">昼と夜で、<br>顔が変わる喫茶店。</p>
+        <p class="subcopy">窓の光が落ちるころ、<br>店内は少しだけ暗くなります。</p>
+        <span class="cta">お店を見る</span>
+      </div>
+    </div></div>
+    <p class="cap"><b>A-1</b>　1080×1080／IGフィード</p>
+  </figure>
+
+  <figure class="item">
+    <div class="frame sq-box"><div class="banner sq">
+      <img class="bg" src="https://images.unsplash.com/photo-1560648108-3cb04b70eb3a?auto=format&fit=crop&w=1400&q=80" alt="">
+      <div class="veil" style="background:linear-gradient(90deg,rgba(10,9,6,.86) 0%,rgba(10,9,6,.55) 58%,rgba(10,9,6,.20) 100%)"></div>
+      <div class="b-inner">
+        <div class="logo">Cafe Lueur</div>
+        <div class="spacer"></div>
+        <span class="tag">A/B 派生案</span>
+        <p class="copy">昼と夜で、<br>顔が変わる<br>喫茶店。</p>
+        <p class="subcopy">17時、照明が一段落ちる。</p>
+        <span class="cta outline">お店を見る</span>
+      </div>
+    </div></div>
+    <p class="cap"><b>A-2</b>　1080×1080／同訴求・レイアウト違い</p>
+  </figure>
+</div>
+
+<div class="note">
+  <b>A-1とA-2で変えたのは1点だけです。</b>
+  グラデーションの方向（下から上か、左から右か）と、それに合わせた文字の置き場所。
+  訴求文とCTAは同じにしてあります。こうしておくと、数値に差が出たときに
+  「コピーが効いたのか、レイアウトが効いたのか」を切り分けられます。
+  <ul>
+    <li>A-1：写真の中央を見せる。世界観が伝わりやすい</li>
+    <li>A-2：左に文字の帯を作る。文字が読みやすく、CTAが目立つ</li>
+  </ul>
+</div>
+
+<h2>訴求軸B｜具体的な体験で引く</h2>
+<p class="sub">抽象的な「居心地」ではなく、時刻と席という具体で言い切る。クリックを取りにいく面。</p>
+
+<div class="grid">
+  <figure class="item">
+    <div class="frame pt-box"><div class="banner pt">
+      <img class="bg" src="https://images.unsplash.com/photo-1555172375-56a199d6164d?auto=format&fit=crop&w=1400&q=80" alt="">
+      <div class="veil" style="background:linear-gradient(180deg,rgba(10,9,6,.30) 0%,rgba(10,9,6,.55) 55%,rgba(10,9,6,.88) 100%)"></div>
+      <div class="b-inner">
+        <div class="logo">Cafe Lueur</div>
+        <div class="spacer"></div>
+        <p class="copy">10:00の光が、<br>いちばん綺麗な席が<br>あります。</p>
+        <p class="subcopy">窓際、左から2番目。</p>
+        <span class="cta">席を見てみる</span>
+      </div>
+    </div></div>
+    <p class="cap"><b>B-1</b>　1080×1350／IGフィード縦</p>
+  </figure>
+
+  <figure class="item">
+    <div class="frame st-box"><div class="banner st">
+      <img class="bg" src="https://images.unsplash.com/photo-1530632308350-e96d55f00e4a?auto=format&fit=crop&w=1400&q=80" alt="">
+      <div class="veil" style="background:linear-gradient(180deg,rgba(10,9,6,.66) 0%,rgba(10,9,6,.28) 40%,rgba(10,9,6,.88) 100%)"></div>
+      <div class="b-inner">
+        <div class="logo">Cafe Lueur</div>
+        <div class="spacer"></div>
+        <p class="copy">10:00の光が、<br>いちばん<br>綺麗な席。</p>
+        <p class="subcopy">窓際、左から2番目。</p>
+        <span class="cta">席を見てみる</span>
+      </div>
+      <div class="safe">UIセーフエリア（下300pxを空ける）</div>
+    </div></div>
+    <p class="cap"><b>B-2</b>　1080×1920／ストーリーズ</p>
+  </figure>
+</div>
+
+<div class="note">
+  <b>ストーリーズは、下300pxを必ず空けています。</b>
+  「他の人にシェア」やリンクスタンプなど、アプリ側のUIが重なる領域だからです。
+  ここに文字やCTAを置くと、実機で隠れます。
+  上部にもプロフィールアイコンが乗るため、ロゴは96px下げています。
+</div>
+
+<h2>訴求軸C｜こだわりで引く</h2>
+<p class="sub">Web・EC面。横長は視線が左から右へ流れるので、文字を左に固定して写真を右へ逃がす。</p>
+
+<div class="grid">
+  <figure class="item">
+    <div class="frame wd-box"><div class="banner wd">
+      <img class="bg" src="https://images.unsplash.com/photo-1621343607959-5d11ff0f1e39?auto=format&fit=crop&w=1600&q=80" alt="">
+      <div class="veil" style="background:linear-gradient(90deg,rgba(10,9,6,.92) 0%,rgba(10,9,6,.72) 46%,rgba(10,9,6,.18) 100%)"></div>
+      <div class="b-inner">
+        <div class="logo">Cafe Lueur</div>
+        <p class="copy">豆は、その日の<br>天気で選んでいます。</p>
+        <p class="subcopy">雨の日は、深めに。</p>
+        <span class="cta">今日の一杯を見る</span>
+      </div>
+    </div></div>
+    <p class="cap"><b>C-1</b>　1200×628／Web・EC</p>
+  </figure>
+
+  <figure class="item">
+    <div class="frame wd-box"><div class="banner wd" style="background:var(--surface)">
+      <div class="veil" style="background:radial-gradient(120% 140% at 88% 50%,rgba(217,188,144,.14) 0%,rgba(22,21,15,0) 62%)"></div>
+      <div class="b-inner">
+        <div class="logo">Cafe Lueur</div>
+        <p class="copy" style="color:var(--ink)">豆は、その日の<br>天気で選んでいます。</p>
+        <p class="subcopy" style="color:var(--ink-soft)">雨の日は、深めに。</p>
+        <span class="cta">今日の一杯を見る</span>
+      </div>
+    </div></div>
+    <p class="cap"><b>C-2</b>　1200×628／写真なし・軽量版</p>
+  </figure>
+</div>
+
+<div class="note">
+  <b>C-2は写真を使わない版です。</b>
+  配信面によっては画像内テキストの比率が問われたり、写真の権利確認が間に合わなかったりします。
+  そのとき差し替えられる案を最初から用意しておくと、入稿が止まりません。読み込みも軽くなります。
+</div>
+
+<h2>制作するときに守っていること</h2>
+<div class="note" style="border-left-color:var(--brass-deep)">
+  <ul style="margin-top:0">
+    <li><b>スマホの実寸から逆算する。</b>1080px幅で本文30px以上、コピーは60px以上。手元で見て読めない文字は作らない</li>
+    <li><b>文字と背景のコントラストは4.5:1以上。</b>写真の上に置くときは必ずベール（グラデーション）を1枚敷く</li>
+    <li><b>1枚に1メッセージ。</b>言いたいことが2つあるなら、2案に分ける</li>
+    <li><b>A/Bは1要素だけ変える。</b>同時に2つ変えると、どちらが効いたか分からなくなる</li>
+    <li><b>別サイズへ展開しやすいレイヤー構造にする。</b>背景／ベール／文字／CTAを分け、フレーム名も揃える</li>
+    <li><b>根拠のない誇張表現は書かない。</b>「日本一」「必ず」などは使わず、事実で言い切る。薬機法・景表法に触れる分野は、表現の可否を事前に確認する前提で進める</li>
+    <li><b>素材の出典とライセンスを一覧で添える。</b>写真はUnsplash（商用利用可）、フォントはGoogle Fonts（OFL）</li>
+  </ul>
+</div>
+
+<footer class="page">
+  制作：田原（ラクラボ）／ 題材は自主制作のブランド「Cafe Lueur」です。実在の店舗ではありません。<br>
+  ブランドのLP：<a href="../lueur/">Cafe Lueur ランディングページ</a>　｜
+  <a href="../../">ラクラボ トップへ</a><br>
+  写真：Unsplash（商用利用可）／ フォント：Cormorant Garamond・Zen Old Mincho・Zen Kaku Gothic New（Google Fonts）
+</footer>
+
+</div>
+</body>
+</html>
